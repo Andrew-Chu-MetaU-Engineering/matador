@@ -14,6 +14,7 @@ import {
   IconArrowRight,
   IconBrandInstagram,
 } from "@tabler/icons-react";
+import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import "./Home.css";
 
 export default function Home() {
@@ -67,7 +68,15 @@ export default function Home() {
           </Box>
         </Box>
         <Box id="map-area">
-          <h1>Map Area</h1>
+          <APIProvider apiKey={import.meta.env.VITE_GOOGLE_API_KEY}>
+            <Map
+              id="google-map"
+              defaultCenter={{ lat: 37.4868, lng: -122.1483 }}
+              defaultZoom={10}
+              gestureHandling={"cooperative"}
+              disableDefaultUI={true}
+            />
+          </APIProvider>
         </Box>
       </Paper>
       <Box>
