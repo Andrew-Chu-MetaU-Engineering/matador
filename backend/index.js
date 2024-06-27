@@ -14,9 +14,26 @@ app.get("/", (req, res, next) => {
   next();
 });
 
+app.get("/recommend", async (req, res) => {
+  try {
+    const { searchQuery, originAddress, centerLatitude, centerLongitude } =
+      req.query;
+    const options = await utils.getOptions(
+      searchQuery,
+      originAddress,
+      centerLatitude,
+      centerLongitude
+    );
+
+    res.status(200).send(options);
+  } catch (error) {
+    res.status(500);
+  }
+});
+
 app.get("/gComputeRoutes", async (req, res) => {
   try {
-    const data = await utils.fetchRoutes(
+    const data = await utils.fetchRoute(
       req.query.originAddress,
       req.query.destinationAddress
     );
