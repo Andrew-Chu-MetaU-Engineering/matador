@@ -8,6 +8,7 @@ app.use(express.json());
 app.use(cors());
 
 const { PORT } = process.env;
+const { PORT } = process.env;
 
 app.get("/", (req, res, next) => {
   res.send("Matador API");
@@ -28,6 +29,11 @@ app.get("/gComputeRoutes", async (req, res) => {
 
 app.get("/gNearbyPlaces", async (req, res) => {
   try {
+    const data = await utils.fetchPlaces(
+      req.query.searchQuery,
+      req.query.centerLatitude,
+      req.query.centerLongitude
+    );
     const data = await utils.fetchPlaces(
       req.query.searchQuery,
       req.query.centerLatitude,
