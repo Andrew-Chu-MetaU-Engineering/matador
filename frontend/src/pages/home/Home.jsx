@@ -35,10 +35,6 @@ export default function Home() {
     fetchRoute(places[0].formattedAddress, places[1].formattedAddress);
   }, [places]);
 
-  useEffect(() => {
-    console.log(route);
-  }, [route]);
-
   async function fetchPlaces(searchQuery, center) {
     try {
       let url = new URL("gNearbyPlaces", EXPRESS_API);
@@ -68,7 +64,7 @@ export default function Home() {
         throw new Error(`HTTP error. Status ${response.status}`);
       }
       const data = await response.json();
-      setRoute(data.routes[0]); // TODO figure out why this works
+      setRoute(data.routes[0]);
     } catch (error) {
       console.error("Error fetching route:", error);
     }
