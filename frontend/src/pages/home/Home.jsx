@@ -14,10 +14,66 @@ import {
   IconArrowRight,
   IconBrandInstagram,
 } from "@tabler/icons-react";
-import { APIProvider, Map } from "@vis.gl/react-google-maps";
+import TransitMap from "./TransitMap";
 import "./Home.css";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [places, setPlaces] = useState([]);
+  const [route, setRoute] = useState(null);
+  const EXPRESS_API = import.meta.env.VITE_EXPRESS_API;
+
+  useEffect(() => {
+    fetchPlaces("chinese restaurants in mountain view", {
+      latitude: 37.3888,
+      longitude: -122.0823,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!places || places.length === 0) return;
+    fetchRoute(places[0].formattedAddress, places[1].formattedAddress);
+  }, [places]);
+
+  useEffect(() => {
+    console.log(route);
+  }, [route]);
+
+  async function fetchPlaces(searchQuery, center) {
+    try {
+      let url = new URL("gNearbyPlaces", EXPRESS_API);
+      url.searchParams.append("searchQuery", searchQuery);
+      url.searchParams.append("centerLatitude", center.latitude);
+      url.searchParams.append("centerLongitude", center.longitude);
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error. Status ${response.status}`);
+      }
+      const data = await response.json();
+      setPlaces(data.places);
+    } catch (error) {
+      console.error("Error fetching places:", error);
+    }
+  }
+
+  async function fetchRoute(origin, destination) {
+    try {
+      let url = new URL("gComputeRoutes", EXPRESS_API);
+      url.searchParams.append("originAddress", origin);
+      url.searchParams.append("destinationAddress", destination);
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error. Status ${response.status}`);
+      }
+      const data = await response.json();
+      setRoute(data.routes[0]); // TODO figure out why this works
+    } catch (error) {
+      console.error("Error fetching route:", error);
+    }
+  }
+
   return (
     <>
       <Box>
@@ -66,17 +122,17 @@ export default function Home() {
               thousandSeparator=","
             />
           </Box>
+          <Box>
+            {places &&
+              places.map((place) => (
+                <p key={place.displayName.text}>{place.displayName.text}</p>
+              ))}
+          </Box>
         </Box>
         <Box id="map-area">
-          <APIProvider apiKey={import.meta.env.VITE_GOOGLE_API_KEY}>
-            <Map
-              id="google-map"
-              defaultCenter={{ lat: 37.4868, lng: -122.1483 }}
-              defaultZoom={10}
-              gestureHandling={"cooperative"}
-              disableDefaultUI={true}
-            />
-          </APIProvider>
+          {route?.polyline?.encodedPolyline && (
+            <TransitMap id="google-map" encodedPath={route.polyline.encodedPolyline} />
+          )}
         </Box>
       </Paper>
       <Box>
