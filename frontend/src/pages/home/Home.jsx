@@ -1,34 +1,35 @@
-import {
-  Paper,
-  Title,
-  Group,
-  Button,
-  Box,
-  ActionIcon,
-  TextInput,
-  NumberInput,
-} from "@mantine/core";
+import { useEffect, useState } from "react";
+import { Paper, Box, ActionIcon, TextInput, NumberInput } from "@mantine/core";
 import {
   IconSearch,
   IconAdjustments,
   IconArrowRight,
-  IconBrandInstagram,
 } from "@tabler/icons-react";
+import { useForm } from "@mantine/form";
+
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import TransitMap from "./TransitMap";
 import "./Home.css";
-import { useEffect, useState } from "react";
 
 export default function Home() {
+  const EXPRESS_API = import.meta.env.VITE_EXPRESS_API;
   const [places, setPlaces] = useState([]);
   const [route, setRoute] = useState(null);
-  const EXPRESS_API = import.meta.env.VITE_EXPRESS_API;
+  const [search, setSearch] = useState({
+    query: "",
+    fare: 0,
+    duration: 0,
+  });
 
   useEffect(() => {
-    fetchPlaces("chinese restaurants in mountain view", {
+    const { query } = search;
+    if (!query) return;
+    fetchPlaces(query, {
       latitude: 37.3888,
       longitude: -122.0823,
     });
-  }, []);
+  }, [search.query]);
 
   useEffect(() => {
     if (!places || places.length === 0) return;
@@ -74,54 +75,67 @@ export default function Home() {
     }
   }
 
+  function handleSearch(values) {
+    setSearch({ ...values });
+    // TODO implement UI interactions for search
+  }
+
+  const form = useForm({
+    mode: "uncontrolled",
+    initialValues: {
+      query: "",
+      fare: null, // null to display no value
+      duration: null,
+    },
+  });
+
   return (
     <>
-      <Box>
-        <header id="header">
-          <Group id="header-spacing-group">
-            <Title order={1}>Matador</Title>
-            <Group>
-              <Button variant="default">Log in</Button>
-              <Button>Sign up</Button>
-            </Group>
-          </Group>
-        </header>
-      </Box>
+      <Header />
       <Paper id="home-body">
         <Box id="search-panel">
-          <span id="searchbox-span">
-            <TextInput
-              radius="md"
-              size="md"
-              placeholder="Search"
-              leftSection={<IconSearch stroke={1.5} />}
-              rightSection={
-                <ActionIcon radius="sm" variant="light">
-                  <IconArrowRight stroke={1.5} />
-                </ActionIcon>
-              }
-            />
-            <ActionIcon variant="filled">
-              <IconAdjustments stroke={1.5} />
-            </ActionIcon>
-          </span>
-          <Box id="search-filters">
-            <NumberInput
-              label="Transit fare"
-              prefix="< $"
-              allowNegative={false}
-              allowDecimal={false}
-              thousandSeparator=","
-            />
-            <NumberInput
-              label="Transit duration"
-              prefix="< "
-              suffix=" min"
-              allowNegative={false}
-              allowDecimal={false}
-              thousandSeparator=","
-            />
-          </Box>
+          <form onSubmit={form.onSubmit((values) => handleSearch(values))}>
+            <span id="searchbox-span">
+              <TextInput
+                key={form.key("query")}
+                {...form.getInputProps("query")}
+                radius="md"
+                size="md"
+                placeholder="Search"
+                leftSection={<IconSearch stroke={1.5} />}
+                rightSection={
+                  <ActionIcon type="submit" radius="sm" variant="light">
+                    <IconArrowRight stroke={1.5} />
+                  </ActionIcon>
+                }
+              />
+              <ActionIcon variant="filled">
+                <IconAdjustments stroke={1.5} />
+              </ActionIcon>
+            </span>
+            <Box id="search-filters">
+              <NumberInput
+                key={form.key("fare")}
+                {...form.getInputProps("fare")}
+                label="Transit fare"
+                prefix="< $"
+                allowNegative={false}
+                allowDecimal={false}
+                thousandSeparator=","
+              />
+              <NumberInput
+                key={form.key("duration")}
+                {...form.getInputProps("duration")}
+                label="Transit duration"
+                prefix="< "
+                suffix=" min"
+                allowNegative={false}
+                allowDecimal={false}
+                thousandSeparator=","
+              />
+            </Box>
+          </form>
+
           <Box>
             {places &&
               places.map((place) => (
@@ -131,20 +145,14 @@ export default function Home() {
         </Box>
         <Box id="map-area">
           {route?.polyline?.encodedPolyline && (
-            <TransitMap id="google-map" encodedPath={route.polyline.encodedPolyline} />
+            <TransitMap
+              id="google-map"
+              encodedPath={route.polyline.encodedPolyline}
+            />
           )}
         </Box>
       </Paper>
-      <Box>
-        <footer id="footer">
-          <Group id="footer-spacing-group">
-            <Title order={2}>Matador</Title>
-            <ActionIcon size="lg" color="gray" variant="subtle">
-              <IconBrandInstagram stroke={1.5} />
-            </ActionIcon>
-          </Group>
-        </footer>
-      </Box>
+      <Footer />
     </>
   );
 }
