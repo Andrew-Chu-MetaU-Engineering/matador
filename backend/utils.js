@@ -73,25 +73,26 @@ async function getOptions(
   centerLongitude
 ) {
   try {
-    const fetchedPlaces = await fetchPlaces(
+    const { places } = await fetchPlaces(
       searchQuery,
       centerLatitude,
       centerLongitude
     );
-    const places = fetchedPlaces.places;
 
     let options = [];
     for (const place of places) {
-      const routes = await fetchRoute(
+      const { routes } = await fetchRoute(
         originAddress,
         place.formattedAddress
       );
 
-      let placeRoutes = {
-        place: place,
-        routes: routes.routes,
-      };
-      options.push(placeRoutes);
+      for (const route of routes) {
+        let placeRoutes = {
+          place: place,
+          route: route,
+        };
+        options.push(placeRoutes);
+      }
     }
     return options;
   } catch (error) {
@@ -99,8 +100,25 @@ async function getOptions(
   }
 }
 
+function parseDuration(route) {
+  return parseInt(route.duration, 10);
+}
+
+function calculateFare(route) {
+  const { units = 0, nanos = 0 } = route.travelAdvisory.transitFare;
+  return parseInt(units) + nanos * 10 ** -9;
+}
+
+function recommend(options) {
+  // TODO build out the recommendation system
+  options.sort((a, b) => parseDuration(a.route) - parseDuration(b.route));
+  options.sort((a, b) => calculateFare(a.route) - calculateFare(b.route));
+  return options;
+}
+
 module.exports = {
   fetchRoute,
   fetchPlaces,
   getOptions,
+  recommend,
 };

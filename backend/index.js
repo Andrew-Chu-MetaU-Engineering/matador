@@ -24,8 +24,7 @@ app.get("/recommend", async (req, res) => {
       centerLatitude,
       centerLongitude
     );
-
-    res.status(200).send(options);
+    res.status(200).send(utils.recommend(options));
   } catch (error) {
     res.status(500);
   }
