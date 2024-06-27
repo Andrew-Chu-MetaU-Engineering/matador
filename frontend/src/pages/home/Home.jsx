@@ -13,36 +13,33 @@ import TransitMap from "./TransitMap";
 import "./Home.css";
 
 export default function Home() {
-  const EXPRESS_API = import.meta.env.VITE_EXPRESS_API;
-  const [places, setPlaces] = useState([]);
-  const [route, setRoute] = useState(null);
+  const {
+    VITE_EXPRESS_API,
+    VITE_ORIGIN_ADDRESS,
+    VITE_DEFAULT_VIEW_LAT,
+    VITE_DEFAULT_VIEW_LNG,
+  } = import.meta.env;
   const [search, setSearch] = useState({
     query: "",
     fare: 0,
     duration: 0,
   });
+  const [options, setOptions] = useState([]);
+  const [route, setRoute] = useState(null);
 
   useEffect(() => {
     const { query } = search;
     if (!query) return;
-    fetchPlaces(query, {
-      latitude: 37.3888,
-      longitude: -122.0823,
+    fetchRecommendations(query, {
+      latitude: VITE_DEFAULT_VIEW_LAT, 
+      longitude: VITE_DEFAULT_VIEW_LNG,
     });
-  }, [search.query]);
+  }, [search]);
 
-  useEffect(() => {
-    if (!places || places.length === 0) return;
-    fetchRoute(places[0].formattedAddress, places[1].formattedAddress);
-  }, [places]);
-
-  useEffect(() => {
-    console.log(route);
-  }, [route]);
-
-  async function fetchPlaces(searchQuery, center) {
+  async function fetchRecommendations(searchQuery, center) {
     try {
-      let url = new URL("gNearbyPlaces", EXPRESS_API);
+      let url = new URL("recommend", VITE_EXPRESS_API);
+      url.searchParams.append("originAddress", VITE_ORIGIN_ADDRESS);
       url.searchParams.append("searchQuery", searchQuery);
       url.searchParams.append("centerLatitude", center.latitude);
       url.searchParams.append("centerLongitude", center.longitude);
@@ -51,27 +48,11 @@ export default function Home() {
       if (!response.ok) {
         throw new Error(`HTTP error. Status ${response.status}`);
       }
-      const data = await response.json();
-      setPlaces(data.places);
+      const recommendations = await response.json();
+      setOptions(recommendations);
+      setRoute(recommendations[0].route);
     } catch (error) {
-      console.error("Error fetching places:", error);
-    }
-  }
-
-  async function fetchRoute(origin, destination) {
-    try {
-      let url = new URL("gComputeRoutes", EXPRESS_API);
-      url.searchParams.append("originAddress", origin);
-      url.searchParams.append("destinationAddress", destination);
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error. Status ${response.status}`);
-      }
-      const data = await response.json();
-      setRoute(data.routes[0]); // TODO figure out why this works
-    } catch (error) {
-      console.error("Error fetching route:", error);
+      console.error("Error fetching recommendations:", error);
     }
   }
 
@@ -137,19 +118,19 @@ export default function Home() {
           </form>
 
           <Box>
-            {places &&
-              places.map((place) => (
-                <p key={place.displayName.text}>{place.displayName.text}</p>
+            {options &&
+              options.map((option) => (
+                <div key={option.place.id}>
+                  <h4>{option.place.displayName.text}</h4>
+                </div>
               ))}
           </Box>
         </Box>
         <Box id="map-area">
-          {route?.polyline?.encodedPolyline && (
-            <TransitMap
-              id="google-map"
-              encodedPath={route.polyline.encodedPolyline}
-            />
-          )}
+          <TransitMap
+            id="google-map"
+            encodedPath={route?.polyline?.encodedPolyline}
+          />
         </Box>
       </Paper>
       <Footer />

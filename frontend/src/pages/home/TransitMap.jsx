@@ -3,24 +3,31 @@ import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import { Polyline } from "./Polyline";
 
 export default function TransitMap({ encodedPath }) {
+  const { VITE_GOOGLE_API_KEY, VITE_DEFAULT_VIEW_LAT, VITE_DEFAULT_VIEW_LNG } =
+    import.meta.env;
   return (
-    <APIProvider apiKey={import.meta.env.VITE_GOOGLE_API_KEY}>
+    <APIProvider apiKey={VITE_GOOGLE_API_KEY}>
       <Map
-        defaultCenter={{ lat: 37.4868, lng: -122.1483 }}
+        defaultCenter={{
+          lat: parseFloat(VITE_DEFAULT_VIEW_LAT),
+          lng: parseFloat(VITE_DEFAULT_VIEW_LNG),
+        }}
         defaultZoom={10}
         gestureHandling={"cooperative"}
         disableDefaultUI={true}
       >
-        <Polyline
-          strokeWeight={8}
-          strokeColor={"#000000"}
-          encodedPath={encodedPath}
-        />
+        {encodedPath && (
+          <Polyline
+            strokeWeight={8}
+            strokeColor={"#000000"}
+            encodedPath={encodedPath}
+          />
+        )}
       </Map>
     </APIProvider>
   );
 }
 
 TransitMap.propTypes = {
-  encodedPath: PropTypes.string.isRequired,
+  encodedPath: PropTypes.string,
 };
