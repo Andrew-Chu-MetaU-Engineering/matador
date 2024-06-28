@@ -31,7 +31,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!places || places.length === 0) return;
+    if ((places?.length ?? 0) < 2) return;
     fetchRoute(places[0].formattedAddress, places[1].formattedAddress);
   }, [places]);
 
@@ -119,8 +119,7 @@ export default function Home() {
             />
           </Box>
           <Box>
-            {places &&
-              places.map((place) => (
+            {places?.map((place) => (
                 <p key={place.displayName.text}>{place.displayName.text}</p>
               ))}
           </Box>
