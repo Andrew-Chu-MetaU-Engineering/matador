@@ -8,7 +8,6 @@ app.use(express.json());
 app.use(cors());
 
 const { PORT } = process.env;
-const { PORT } = process.env;
 
 app.get("/", (req, res, next) => {
   res.send("Matador API");
