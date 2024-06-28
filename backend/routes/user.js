@@ -11,19 +11,23 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   const user = await prisma.user.findUnique({
-    where: { id: parseInt(req.params.id) },
+    where: { id: req.params.id },
   });
   res.status(200).json(user);
 });
 
-router.post("/", async (req, res) => {
-  const newUser = await prisma.user.create();
+router.post("/:id", async (req, res) => {
+  const newUser = await prisma.user.create({
+    data: {
+      id: req.params.id,
+    },
+  });
   res.status(201).json(newUser);
 });
 
 router.delete("/:id", async (req, res) => {
   const deletedUser = await prisma.user.delete({
-    where: { id: parseInt(req.params.id) },
+    where: { id: req.params.id },
   });
   res.status(204).json(deletedUser);
 });
@@ -31,7 +35,7 @@ router.delete("/:id", async (req, res) => {
 router.put("/:id/hobby", async (req, res) => {
   const user = await prisma.user.update({
     where: {
-      id: parseInt(req.params.id),
+      id: req.params.id,
     },
     data: {
       hobbies: {
@@ -45,7 +49,7 @@ router.put("/:id/hobby", async (req, res) => {
 router.put("/:id/cuisine", async (req, res) => {
   const user = await prisma.user.update({
     where: {
-      id: parseInt(req.params.id),
+      id: req.params.id,
     },
     data: {
       cuisines: {
