@@ -1,9 +1,19 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 
+app.use(express.json());
+app.use(cors());
+
 require("dotenv").config();
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-const PORT = process.env.PORT;
+const {
+  GOOGLE_API_KEY,
+  PORT,
+  COMPUTE_ROUTES_ENDPOINT,
+  TEXTSEARCH_PLACES_ENDPOINT,
+  NEARBY_SEARCH_RADIUS_METERS,
+  MAX_NUM_PLACES_RESULTS,
+} = process.env;
 
 app.get("/", (req, res, next) => {
   res.send("Matador API");
@@ -13,7 +23,7 @@ app.get("/", (req, res, next) => {
 app.get("/gComputeRoutes", async (req, res) => {
   // computes routes from origin to destination and their related transit fares and durations
   try {
-    const response = await fetch(new URL(process.env.COMPUTE_ROUTES_ENDPOINT), {
+    const response = await fetch(new URL(COMPUTE_ROUTES_ENDPOINT), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -23,10 +33,10 @@ app.get("/gComputeRoutes", async (req, res) => {
       },
       body: JSON.stringify({
         origin: {
-          address: "749 W El Camino Real 1st Flr, Mountain View, CA 94040",
+          address: req.query.originAddress,
         },
         destination: {
-          address: "Safeway, 645 San Antonio Rd, Mountain View, CA 94040",
+          address: req.query.destinationAddress,
         },
         travelMode: "TRANSIT",
         computeAlternativeRoutes: false,
@@ -43,31 +53,28 @@ app.get("/gComputeRoutes", async (req, res) => {
 app.get("/gNearbyPlaces", async (req, res) => {
   // retrieves locations matching query text, with a bias toward a geographical radius
   try {
-    const response = await fetch(
-      "https://places.googleapis.com/v1/places:searchText",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": GOOGLE_API_KEY,
-          "X-Goog-FieldMask": "places.displayName,places.formattedAddress",
-        },
-        body: JSON.stringify({
-          textQuery: "ramen restaurants in mountain view",
-          maxResultCount: 10,
-          locationBias: {
-            circle: {
-              center: {
-                latitude: 37.3888,
-                longitude: -122.0823,
-              },
-              radius: 500,
+    const response = await fetch(new URL(TEXTSEARCH_PLACES_ENDPOINT), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_API_KEY,
+        "X-Goog-FieldMask": "places.displayName,places.formattedAddress",
+      },
+      body: JSON.stringify({
+        textQuery: req.query.searchQuery,
+        maxResultCount: 10,
+        locationBias: {
+          circle: {
+            center: {
+              latitude: req.query.centerLatitude,
+              longitude: req.query.centerLongitude,
             },
+            radius: NEARBY_SEARCH_RADIUS_METERS,
           },
-          pageSize: process.env.MAX_NUM_PLACES_RESULTS,
-        }),
-      }
-    );
+        },
+        pageSize: MAX_NUM_PLACES_RESULTS,
+      }),
+    });
     const data = await response.json();
     res.status(200).send(data);
   } catch (error) {
