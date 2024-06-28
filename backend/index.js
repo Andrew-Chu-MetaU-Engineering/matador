@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const utils = require("./utils");
+const utils = require("./FetchResultsUtils");
 require("dotenv").config();
 
 const app = express();
