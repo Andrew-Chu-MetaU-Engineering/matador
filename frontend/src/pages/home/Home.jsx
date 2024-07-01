@@ -60,6 +60,7 @@ export default function Home({ user }) {
   async function fetchRecommendations(searchQuery, center) {
     try {
       let url = new URL("recommend", VITE_EXPRESS_API);
+      url.searchParams.append("user", profile.id);
       url.searchParams.append("originAddress", VITE_ORIGIN_ADDRESS);
       url.searchParams.append("searchQuery", searchQuery);
       url.searchParams.append("centerLatitude", center.latitude);
@@ -96,7 +97,6 @@ export default function Home({ user }) {
       <Header />
       <Paper id="home-body">
         <Box id="search-panel">
-          {profile && <h4>{profile.id}</h4>}
           <form onSubmit={form.onSubmit((values) => handleSearch(values))}>
             <span id="searchbox-span">
               <TextInput

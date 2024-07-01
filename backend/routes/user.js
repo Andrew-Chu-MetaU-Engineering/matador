@@ -9,8 +9,18 @@ router.get("/", async (req, res) => {
   res.status(200).json(users);
 });
 
+async function getUser(id) {
+  // get a single user without creating a new profile
+  // for use internally within backend
+  const user = await prisma.user.findUnique({
+    where: { id: id },
+  });
+  return user;
+}
+
 router.get("/:id", async (req, res) => {
   // creates a user with given id if not found, otherwise gets user
+  // for use in conjunction with login page
   const user = await prisma.user.upsert({
     where: { id: req.params.id },
     update: {},
@@ -63,4 +73,4 @@ router.put("/:id/cuisine", async (req, res) => {
   res.status(204).json(user);
 });
 
-module.exports = router;
+module.exports = { router, getUser };

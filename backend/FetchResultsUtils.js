@@ -97,10 +97,14 @@ function calculateFare(route) {
   return parseInt(units) + nanos * 10 ** -9;
 }
 
-function recommend(options) {
+function recommend(profile, options) {
   // TODO build out the recommendation system
-  options.sort((a, b) => parseDuration(a.route) - parseDuration(b.route));
-  options.sort((a, b) => calculateFare(a.route) - calculateFare(b.route));
+  // TODO use profile
+  options.sort((a, b) =>
+    calculateFare(a.route) === calculateFare(b.route)
+      ? parseDuration(a.route) - parseDuration(b.route)
+      : calculateFare(a.route) - calculateFare(b.route)
+  );
   return options;
 }
 

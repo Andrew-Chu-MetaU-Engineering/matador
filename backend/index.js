@@ -4,7 +4,7 @@ const utils = require("./FetchResultsUtils");
 require("dotenv").config();
 
 const googleApiRoute = require("./routes/googleAPI");
-const userRoute = require("./routes/user")
+const { router: userRoute, getUser } = require("./routes/user");
 
 const app = express();
 app.use(express.json());
@@ -22,15 +22,21 @@ app.use("/user", userRoute);
 
 app.get("/recommend", async (req, res) => {
   try {
-    const { searchQuery, originAddress, centerLatitude, centerLongitude } =
-      req.query;
+    const {
+      user: userId,
+      searchQuery,
+      originAddress,
+      centerLatitude,
+      centerLongitude,
+    } = req.query;
     const options = await utils.getOptions(
       searchQuery,
       originAddress,
       centerLatitude,
       centerLongitude
     );
-    res.status(200).send(utils.recommend(options));
+    const profile = await getUser(userId);
+    res.status(200).send(utils.recommend(profile, options));
   } catch (error) {
     res.status(500);
   }
