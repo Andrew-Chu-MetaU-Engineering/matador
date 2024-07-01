@@ -16,16 +16,18 @@ export default function TransitMap({ encodedPath }) {
         gestureHandling={"cooperative"}
         disableDefaultUI={true}
       >
-        <Polyline
-          strokeWeight={8}
-          strokeColor={"#000000"}
-          encodedPath={encodedPath}
-        />
+        {encodedPath && (
+          <Polyline
+            strokeWeight={8}
+            strokeColor={"#000000"}
+            encodedPath={encodedPath}
+          />
+        )}
       </Map>
     </APIProvider>
   );
 }
 
 TransitMap.propTypes = {
-  encodedPath: PropTypes.string.isRequired,
+  encodedPath: PropTypes.string,
 };
