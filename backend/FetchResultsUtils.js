@@ -9,61 +9,53 @@ const {
 
 async function fetchRoute(originAddress, destinationAddress) {
   // computes route from origin to destination and their related transit fares and durations
-  try {
-    const response = await fetch(new URL(COMPUTE_ROUTES_ENDPOINT), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": GOOGLE_API_KEY,
-        "X-Goog-FieldMask":
-          "routes.duration,routes.polyline,routes.travel_advisory.transitFare,routes.legs.stepsOverview",
+  const response = await fetch(new URL(COMPUTE_ROUTES_ENDPOINT), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": GOOGLE_API_KEY,
+      "X-Goog-FieldMask":
+        "routes.duration,routes.polyline,routes.travel_advisory.transitFare,routes.legs.stepsOverview",
+    },
+    body: JSON.stringify({
+      origin: {
+        address: originAddress,
       },
-      body: JSON.stringify({
-        origin: {
-          address: originAddress,
-        },
-        destination: {
-          address: destinationAddress,
-        },
-        travelMode: "TRANSIT",
-        computeAlternativeRoutes: false,
-      }),
-    });
-    return await response.json();
-  } catch (error) {
-    throw error;
-  }
+      destination: {
+        address: destinationAddress,
+      },
+      travelMode: "TRANSIT",
+      computeAlternativeRoutes: false,
+    }),
+  });
+  return await response.json();
 }
 
 async function fetchPlaces(searchQuery, centerLatitude, centerLongitude) {
   // retrieves locations matching query text, with a bias toward a geographical radius
-  try {
-    const response = await fetch(new URL(TEXTSEARCH_PLACES_ENDPOINT), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": GOOGLE_API_KEY,
-        "X-Goog-FieldMask":
-          "places.id,places.displayName,places.formattedAddress",
-      },
-      body: JSON.stringify({
-        textQuery: searchQuery,
-        locationBias: {
-          circle: {
-            center: {
-              latitude: centerLatitude,
-              longitude: centerLongitude,
-            },
-            radius: NEARBY_SEARCH_RADIUS_METERS,
+  const response = await fetch(new URL(TEXTSEARCH_PLACES_ENDPOINT), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": GOOGLE_API_KEY,
+      "X-Goog-FieldMask":
+        "places.id,places.displayName,places.formattedAddress",
+    },
+    body: JSON.stringify({
+      textQuery: searchQuery,
+      locationBias: {
+        circle: {
+          center: {
+            latitude: centerLatitude,
+            longitude: centerLongitude,
           },
+          radius: NEARBY_SEARCH_RADIUS_METERS,
         },
-        pageSize: MAX_NUM_PLACES_RESULTS,
-      }),
-    });
-    return await response.json();
-  } catch (error) {
-    throw error;
-  }
+      },
+      pageSize: MAX_NUM_PLACES_RESULTS,
+    }),
+  });
+  return await response.json();
 }
 
 async function getOptions(
@@ -72,32 +64,25 @@ async function getOptions(
   centerLatitude,
   centerLongitude
 ) {
-  try {
-    const { places } = await fetchPlaces(
-      searchQuery,
-      centerLatitude,
-      centerLongitude
-    );
+  const { places } = await fetchPlaces(
+    searchQuery,
+    centerLatitude,
+    centerLongitude
+  );
 
-    let options = [];
-    for (const place of places) {
-      const { routes } = await fetchRoute(
-        originAddress,
-        place.formattedAddress
-      );
+  let options = [];
+  for (const place of places) {
+    const { routes } = await fetchRoute(originAddress, place.formattedAddress);
 
-      for (const route of routes) {
-        let placeRoutes = {
-          place: place,
-          route: route,
-        };
-        options.push(placeRoutes);
-      }
+    for (const route of routes) {
+      let placeRoutes = {
+        place: place,
+        route: route,
+      };
+      options.push(placeRoutes);
     }
-    return options;
-  } catch (error) {
-    throw error;
   }
+  return options;
 }
 
 function parseDuration(route) {
