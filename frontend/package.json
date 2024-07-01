@@ -17,7 +17,8 @@
     "@vis.gl/react-google-maps": "^1.1.0",
     "firebase": "^10.12.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.24.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
