@@ -70,11 +70,14 @@ async function getOptions(
     centerLongitude
   );
 
-  let options = [];
-  for (const place of places) {
-    const { routes } = await fetchRoute(originAddress, place.formattedAddress);
+  const routesPromises = places.map((place) =>
+    fetchRoute(originAddress, place.formattedAddress)
+  );
+  const routes = await Promise.all(routesPromises);
 
-    for (const route of routes) {
+  let options = [];
+  for (const [i, place] of places.entries()) {
+    for (const route of routes[i].routes) {
       let placeRoutes = {
         place: place,
         route: route,
