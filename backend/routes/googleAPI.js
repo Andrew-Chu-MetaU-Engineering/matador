@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const utils = require("../utils");
+const utils = require("../FetchResultsUtils");
 
 router.use("/", (req, res, next) => {
   next();
@@ -20,7 +20,6 @@ router.get("/computeRoute", async (req, res) => {
 });
 
 router.get("/nearbyPlaces", async (req, res) => {
-  console.log("first")
   try {
     const data = await utils.fetchPlaces(
       req.query.searchQuery,
