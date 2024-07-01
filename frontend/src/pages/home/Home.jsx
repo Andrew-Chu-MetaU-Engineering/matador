@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { Paper, Box, ActionIcon, TextInput, NumberInput } from "@mantine/core";
 import {
   IconSearch,
@@ -12,13 +13,14 @@ import Footer from "../../components/Footer";
 import TransitMap from "./TransitMap";
 import "./Home.css";
 
-export default function Home() {
+export default function Home({ user }) {
   const {
     VITE_EXPRESS_API,
     VITE_ORIGIN_ADDRESS,
     VITE_DEFAULT_VIEW_LAT,
     VITE_DEFAULT_VIEW_LNG,
   } = import.meta.env;
+  const [profile, setProfile] = useState(null);
   const [search, setSearch] = useState({
     query: "",
     fare: 0,
@@ -28,10 +30,29 @@ export default function Home() {
   const [route, setRoute] = useState(null);
 
   useEffect(() => {
+    if (user != null) fetchProfile(user);
+  }, [user]);
+
+  async function fetchProfile(user) {
+    try {
+      let url = new URL(`user/${user.uid}`, VITE_EXPRESS_API);
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error. Status ${response.status}`);
+      }
+      let profile = await response.json();
+      setProfile(profile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  }
+
+  useEffect(() => {
     const { query } = search;
     if (!query) return;
     fetchRecommendations(query, {
-      latitude: VITE_DEFAULT_VIEW_LAT, 
+      latitude: VITE_DEFAULT_VIEW_LAT,
       longitude: VITE_DEFAULT_VIEW_LNG,
     });
   }, [search]);
@@ -75,6 +96,7 @@ export default function Home() {
       <Header />
       <Paper id="home-body">
         <Box id="search-panel">
+          {profile && <h4>{profile.id}</h4>}
           <form onSubmit={form.onSubmit((values) => handleSearch(values))}>
             <span id="searchbox-span">
               <TextInput
@@ -137,3 +159,7 @@ export default function Home() {
     </>
   );
 }
+
+Home.propTypes = {
+  user: PropTypes.object,
+};

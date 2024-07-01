@@ -10,8 +10,11 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const user = await prisma.user.findUnique({
+  // creates a user with given id if not found, otherwise gets user
+  const user = await prisma.user.upsert({
     where: { id: req.params.id },
+    update: {},
+    create: { id: req.params.id },
   });
   res.status(200).json(user);
 });
