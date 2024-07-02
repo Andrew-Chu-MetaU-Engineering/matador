@@ -37,7 +37,24 @@ function cosineSimilarity(vecA, vecB) {
   );
 }
 
-function feasibilityFilter(interests, settings) {}
+function closedOnArrival() {
+  // TODO to be implemented
+  return false;
+}
+
+function feasibilityFilter(option, settings) {
+  const { place, extracted } = option;
+  const { preferredFare, preferredDuration, budget, minRating } = settings;
+  return !(
+    (preferredFare.isStrong && extracted.fare > preferredFare.fare) ||
+    (preferredDuration.isStrong &&
+      extracted.duration > preferredDuration.duration) ||
+    extracted.priceLevel > budget ||
+    extracted.rating > minRating ||
+    closedOnArrival(currentTime, extracted.duration, place.currentOpeningHours)
+  );
+}
+
 function refetch(n) {}
 async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   const NEAR_INTEREST_THRESHOLD = 0.1;
