@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -7,12 +9,12 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase-config";
 
-export default function Authentication() {
+export default function Authentication({ user, setUser }) {
+  const navigate = useNavigate();
   const [registrationEmail, setRegistrationEmail] = useState("");
   const [registrationPassword, setRegistrationPassword] = useState("");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  const [user, setUser] = useState({});
 
   useEffect(() => {
     onAuthStateChanged(auth, (currentUser) => {
@@ -45,7 +47,7 @@ export default function Authentication() {
   }
 
   return (
-    <div className="App">
+    <div>
       <div>
         <h3> Register User </h3>
         <input
@@ -86,6 +88,12 @@ export default function Authentication() {
       {user?.email}
 
       <button onClick={logout}> Sign Out </button>
+      <button onClick={() => navigate("/")}>Home</button>
     </div>
   );
 }
+
+Authentication.propTypes = {
+  user: PropTypes.object,
+  setUser: PropTypes.func.isRequired,
+};
