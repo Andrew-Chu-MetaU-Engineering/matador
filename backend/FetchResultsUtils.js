@@ -9,13 +9,20 @@ const {
 
 async function fetchRoute(originAddress, destinationAddress) {
   // computes route from origin to destination and their related transit fares and durations
+  const FIELDS = [
+    "routes.duration",
+    "routes.polyline",
+    "routes.travel_advisory.transitFare",
+    "routes.legs.stepsOverview",
+    "routes.viewport",
+  ];
+
   const response = await fetch(new URL(COMPUTE_ROUTES_ENDPOINT), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": GOOGLE_API_KEY,
-      "X-Goog-FieldMask":
-        "routes.duration,routes.polyline,routes.travel_advisory.transitFare,routes.legs.stepsOverview",
+      "X-Goog-FieldMask": FIELDS.join(),
     },
     body: JSON.stringify({
       origin: {
@@ -33,13 +40,25 @@ async function fetchRoute(originAddress, destinationAddress) {
 
 async function fetchPlaces(searchQuery, centerLatitude, centerLongitude) {
   // retrieves locations matching query text, with a bias toward a geographical radius
+  const FIELDS = [
+    "places.id",
+    "places.displayName",
+    "places.types",
+    "places.formattedAddress",
+    "places.rating",
+    "places.priceLevel",
+    "places.currentOpeningHours",
+    "places.editorialSummary",
+    "places.goodForChildren",
+    "places.goodForGroups",
+    "places.accessibilityOptions",
+  ];
   const response = await fetch(new URL(TEXTSEARCH_PLACES_ENDPOINT), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": GOOGLE_API_KEY,
-      "X-Goog-FieldMask":
-        "places.id,places.displayName,places.formattedAddress",
+      "X-Goog-FieldMask": FIELDS.join(),
     },
     body: JSON.stringify({
       textQuery: searchQuery,
