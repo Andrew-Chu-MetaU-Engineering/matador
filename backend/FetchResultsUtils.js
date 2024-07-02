@@ -70,6 +70,7 @@ async function getOptions(
     centerLongitude
   );
 
+  // TODO transition to Route Matrix API
   const routesPromises = places.map((place) =>
     fetchRoute(originAddress, place.formattedAddress)
   );
@@ -81,6 +82,10 @@ async function getOptions(
       let placeRoutes = {
         place: place,
         route: route,
+        extracted: {
+          fare: calculateFare(route),
+          duration: parseDuration(route),
+        },
       };
       options.push(placeRoutes);
     }
