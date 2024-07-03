@@ -64,7 +64,7 @@ function calculatePreferenceScores(settings, options) {
 }
 
 function calculateTransitScores(options) {
-  const VALUE_OF_SECOND = 12 / (60 * 60); // $12 per hour
+  const VALUE_OF_SECOND = 28 / (60 * 60); // $28 per hour
 
   const transitScores = new Map();
   for (const option of options) {
