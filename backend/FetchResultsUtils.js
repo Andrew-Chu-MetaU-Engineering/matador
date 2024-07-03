@@ -102,6 +102,8 @@ async function getOptions(
         place: place,
         route: route,
         extracted: {
+          priceLevel: parsePriceLevel(place),
+          accessibilityScore: parseAccessibility(place),
           fare: calculateFare(route),
           duration: parseDuration(route),
         },
@@ -110,6 +112,37 @@ async function getOptions(
     }
   }
   return options;
+}
+
+function parsePriceLevel(place) {
+  if (place?.priceLevel == null) {
+    return 0;
+  }
+
+  switch (place.priceLevel) {
+    case "PRICE_LEVEL_VERY_EXPENSIVE":
+      return 4;
+    case "PRICE_LEVEL_EXPENSIVE":
+      return 3;
+    case "PRICE_LEVEL_MODERATE":
+      return 2;
+    case "PRICE_LEVEL_INEXPENSIVE":
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+function parseAccessibility(place) {
+  const TOTAL_ACCESSIBILITY_FIELDS = 4; // fields defined in Google Places API
+  if (place?.accessibilityOptions == null) {
+    return 0;
+  }
+
+  return (
+    Object.values(place.accessibilityOptions).filter(Boolean).length /
+    TOTAL_ACCESSIBILITY_FIELDS
+  );
 }
 
 function parseDuration(route) {

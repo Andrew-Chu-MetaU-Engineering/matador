@@ -38,27 +38,26 @@ function cosineSimilarity(vecA, vecB) {
 }
 
 function closedOnArrival() {
-  // TODO to be implemented
+  // TODO to be implemented and used in feasibility filter
   return false;
 }
 
 function feasibilityFilter(option, settings) {
-  const { place, extracted } = option;
+  const { extracted } = option;
   const { preferredFare, preferredDuration, budget, minRating } = settings;
   return !(
     (preferredFare.isStrong && extracted.fare > preferredFare.fare) ||
     (preferredDuration.isStrong &&
       extracted.duration > preferredDuration.duration) ||
     extracted.priceLevel > budget ||
-    extracted.rating > minRating ||
-    closedOnArrival(currentTime, extracted.duration, place.currentOpeningHours)
+    extracted.rating > minRating
   );
 }
 
 function refetch(n) {}
+
 async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   const NEAR_INTEREST_THRESHOLD = 0.1;
-  // TODO make awaits parallel
   let nearInterests = [];
   for (const interest of interests) {
     if (
@@ -71,6 +70,16 @@ async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   return nearInterests;
 }
 
+function normalizeScores(scoresMap) {
+  const scores = [...scoresMap.values()];
+  const maxScore = Math.max(...scores);
+  const minScore = Math.min(...scores);
+  scoresMap.forEach((val, key) =>
+    scoresMap.set(key, (val - minScore) / (maxScore - minScore))
+  );
+  return scoresMap;
+}
+
 module.exports = {
   getTransformer,
   getEmbedder,
@@ -78,4 +87,5 @@ module.exports = {
   feasibilityFilter,
   refetch,
   getAlignedInterests,
+  normalizeScores,
 };
