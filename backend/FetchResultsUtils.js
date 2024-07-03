@@ -9,13 +9,20 @@ const {
 
 async function fetchRoute(originAddress, destinationAddress) {
   // computes route from origin to destination and their related transit fares and durations
+  const FIELDS = [
+    "routes.duration",
+    "routes.polyline",
+    "routes.travel_advisory.transitFare",
+    "routes.legs.stepsOverview",
+    "routes.viewport",
+  ];
+
   const response = await fetch(new URL(COMPUTE_ROUTES_ENDPOINT), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": GOOGLE_API_KEY,
-      "X-Goog-FieldMask":
-        "routes.duration,routes.polyline,routes.travel_advisory.transitFare,routes.legs.stepsOverview",
+      "X-Goog-FieldMask": FIELDS.join(),
     },
     body: JSON.stringify({
       origin: {
@@ -33,13 +40,25 @@ async function fetchRoute(originAddress, destinationAddress) {
 
 async function fetchPlaces(searchQuery, centerLatitude, centerLongitude) {
   // retrieves locations matching query text, with a bias toward a geographical radius
+  const FIELDS = [
+    "places.id",
+    "places.displayName",
+    "places.types",
+    "places.formattedAddress",
+    "places.rating",
+    "places.priceLevel",
+    "places.currentOpeningHours",
+    "places.editorialSummary",
+    "places.goodForChildren",
+    "places.goodForGroups",
+    "places.accessibilityOptions",
+  ];
   const response = await fetch(new URL(TEXTSEARCH_PLACES_ENDPOINT), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": GOOGLE_API_KEY,
-      "X-Goog-FieldMask":
-        "places.id,places.displayName,places.formattedAddress",
+      "X-Goog-FieldMask": FIELDS.join(),
     },
     body: JSON.stringify({
       textQuery: searchQuery,
@@ -70,6 +89,7 @@ async function getOptions(
     centerLongitude
   );
 
+  // TODO transition to Route Matrix API
   const routesPromises = places.map((place) =>
     fetchRoute(originAddress, place.formattedAddress)
   );
@@ -81,11 +101,48 @@ async function getOptions(
       let placeRoutes = {
         place: place,
         route: route,
+        extracted: {
+          priceLevel: parsePriceLevel(place),
+          accessibilityScore: parseAccessibility(place),
+          fare: calculateFare(route),
+          duration: parseDuration(route),
+        },
       };
       options.push(placeRoutes);
     }
   }
   return options;
+}
+
+function parsePriceLevel(place) {
+  if (place?.priceLevel == null) {
+    return 0;
+  }
+
+  switch (place.priceLevel) {
+    case "PRICE_LEVEL_VERY_EXPENSIVE":
+      return 4;
+    case "PRICE_LEVEL_EXPENSIVE":
+      return 3;
+    case "PRICE_LEVEL_MODERATE":
+      return 2;
+    case "PRICE_LEVEL_INEXPENSIVE":
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+function parseAccessibility(place) {
+  const TOTAL_ACCESSIBILITY_FIELDS = 4; // fields defined in Google Places API
+  if (place?.accessibilityOptions == null) {
+    return 0;
+  }
+
+  return (
+    Object.values(place.accessibilityOptions).filter(Boolean).length /
+    TOTAL_ACCESSIBILITY_FIELDS
+  );
 }
 
 function parseDuration(route) {
