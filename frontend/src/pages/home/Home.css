@@ -7,24 +7,6 @@
   margin: 1rem;
 }
 
-#searchbox-span {
-  display: flex;
-  align-items: center;
-}
-
-#searchbox-span > * {
-  margin: 1rem;
-}
-
-#search-filters {
-  display: flex;
-  justify-content: space-between;
-}
-
-#search-filters > * {
-  width: 48%;
-}
-
 #map-area {
   flex: 75%;
   background-color: green;

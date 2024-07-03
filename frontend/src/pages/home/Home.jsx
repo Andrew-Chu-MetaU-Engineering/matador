@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import { Paper, Box, ActionIcon, TextInput, NumberInput } from "@mantine/core";
-import {
-  IconSearch,
-  IconAdjustments,
-  IconArrowRight,
-} from "@tabler/icons-react";
+import PropTypes from 'prop-types'
+import { Paper, Box } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import TransitMap from "./TransitMap";
+import { Search, SearchResult } from "./Search";
 import "./Home.css";
 
 export default function Home({ user }) {
@@ -96,58 +92,15 @@ export default function Home({ user }) {
     <>
       <Header />
       <Paper id="home-body">
-        <Box id="search-panel">
-          <form onSubmit={form.onSubmit((values) => handleSearch(values))}>
-            <span id="searchbox-span">
-              <TextInput
-                key={form.key("query")}
-                {...form.getInputProps("query")}
-                radius="md"
-                size="md"
-                placeholder="Search"
-                leftSection={<IconSearch stroke={1.5} />}
-                rightSection={
-                  <ActionIcon type="submit" radius="sm" variant="light">
-                    <IconArrowRight stroke={1.5} />
-                  </ActionIcon>
-                }
-              />
-              <ActionIcon variant="filled">
-                <IconAdjustments stroke={1.5} />
-              </ActionIcon>
-            </span>
-            <Box id="search-filters">
-              <NumberInput
-                key={form.key("fare")}
-                {...form.getInputProps("fare")}
-                label="Transit fare"
-                prefix="< $"
-                allowNegative={false}
-                allowDecimal={false}
-                thousandSeparator=","
-              />
-              <NumberInput
-                key={form.key("duration")}
-                {...form.getInputProps("duration")}
-                label="Transit duration"
-                prefix="< "
-                suffix=" min"
-                allowNegative={false}
-                allowDecimal={false}
-                thousandSeparator=","
-              />
-            </Box>
-          </form>
-
+        <section id="search-panel">
+          <Search form={form} handleSearch={handleSearch} />
           <Box>
-            {options &&
+            {options?.length > 0 &&
               options.map((option) => (
-                <div key={option.place.id}>
-                  <h4>{option.place.displayName.text}</h4>
-                </div>
+                <SearchResult key={option.place.id} option={option} />
               ))}
           </Box>
-        </Box>
+        </section>
         <Box id="map-area">
           <TransitMap
             id="google-map"
