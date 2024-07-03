@@ -5,7 +5,6 @@ async function calculateInterestScores(query, interests, options) {
   const transformer = await recommendUtils.getTransformer();
   const getEmbedding = recommendUtils.getEmbedder(transformer);
 
-  // TODO make awaits parallel
   const queryEmbedding = await getEmbedding(query);
   const alignedInterests = await recommendUtils.getAlignedInterests(
     queryEmbedding,
@@ -13,27 +12,74 @@ async function calculateInterestScores(query, interests, options) {
     getEmbedding
   );
 
-  // TODO modify how query and aligned interests are combined
   const adjustedQueryEmbedding = await getEmbedding(
     [query, ...alignedInterests].join()
   );
+
   const interestScores = new Map();
   for (const option of options) {
-    // TODO make awaits parallel
+    const { id, displayName, editorialSummary, types } = option.place;
     const descriptionEmbedding = await getEmbedding(
-      option.place.displayName.text
+      [displayName.text, editorialSummary?.text, ...types].join(", ")
     );
-    interestScores[option.place.id] = recommendUtils.cosineSimilarity(
-      adjustedQueryEmbedding,
-      descriptionEmbedding
+    interestScores.set(
+      id,
+      recommendUtils.cosineSimilarity(
+        adjustedQueryEmbedding,
+        descriptionEmbedding
+      )
     );
   }
-  return interestScores;
+  return recommendUtils.normalizeScores(interestScores);
 }
 
-function calculatePreferenceScores(interests, settings, options) {}
+function calculatePreferenceScores(settings, options) {
+  const { budget, minRating, goodForChildren, goodForGroups, isAccessible } =
+    settings;
+  const userVector = [
+    biasPreference(budget, true),
+    biasPreference(minRating, false),
+    +goodForChildren,
+    +goodForGroups,
+    +isAccessible,
+  ];
 
-function calculateTransitScores(settings, options) {}
+  const preferenceScores = new Map();
+  for (const option of options) {
+    const { rating, goodForChildren, goodForGroups } = option.place;
+    const { priceLevel, accessibilityScore } = option.extracted;
+    const optionVector = [
+      priceLevel,
+      rating,
+      goodForChildren ? 1 : 0,
+      goodForGroups ? 1 : 0,
+      accessibilityScore,
+    ];
+    preferenceScores.set(
+      option.place.id,
+      recommendUtils.cosineSimilarity(userVector, optionVector)
+    );
+  }
+  return recommendUtils.normalizeScores(preferenceScores);
+}
+
+function calculateTransitScores(options) {
+  const VALUE_OF_SECOND = 12 / (60 * 60); // $12 per hour
+
+  const transitScores = new Map();
+  for (const option of options) {
+    transitScores.set(
+      option.place.id,
+      1 / (option.extracted.fare + option.extracted.duration * VALUE_OF_SECOND)
+    );
+  }
+  return recommendUtils.normalizeScores(transitScores);
+}
+
+function biasPreference(value, isDownward) {
+  const BIAS = 0.9;
+  return isDownward ? value ** BIAS : value ** (1 / BIAS);
+}
 
 async function recommend() {
   const QUERY = "gyms near mountain view";
@@ -45,11 +91,11 @@ async function recommend() {
       longitude: -122.1461,
     },
     preferredFare: {
-      fare: 0.5,
+      fare: 3.5,
       isStrong: false,
     },
     preferredDuration: {
-      duration: 1500,
+      duration: 5500,
       isStrong: true,
     },
     budget: 2,
@@ -75,15 +121,33 @@ async function recommend() {
   );
   // TODO to be implemented: refetch options if number of options is insufficient
 
+  // TODO generate interest, preference, and transit vector for each option in one iteration
+
   // interest
   const interestScores = await calculateInterestScores(
     query,
     interests,
     options
   );
-  return options.sort(
-    (a, b) => interestScores[a.place.id] - interestScores[b.place.id]
-  );
+
+  // preference
+  const preferenceScores = calculatePreferenceScores(settings, options);
+
+  // transit
+  const transitScores = calculateTransitScores(options);
+
+  const combinedScores = new Map();
+  options.map((option) => {
+    const { id } = option.place;
+    combinedScores.set(
+      id,
+      0.4 * interestScores.get(id) +
+        0.3 * preferenceScores.get(id) +
+        0.3 * transitScores.get(id)
+    );
+  });
+
+  return combinedScores;
 }
 
 recommend();
