@@ -37,20 +37,51 @@ function cosineSimilarity(vecA, vecB) {
   );
 }
 
-function closedOnArrival() {
-  // TODO to be implemented and used in feasibility filter
-  return false;
+function constructTimePoint(point, utcOffsetMinutes) {
+  const { hour, minute, date } = point;
+  let time = new Date(
+    Date.UTC(date.year, date.month - 1, date.day, hour, minute)
+  );
+  time.setMinutes(time.getMinutes() + utcOffsetMinutes);
+  return time;
+}
+
+function openOnArrival(
+  departureTime,
+  transitDuration,
+  openingHours,
+  utcOffsetMinutes
+) {
+  if (openingHours.periods.length < 7) return true; // incomplete hours data should not hurt recommendation rankings
+  let arrivalTime = new Date(new Date(departureTime));
+  arrivalTime.setSeconds(arrivalTime.getSeconds() + transitDuration);
+
+  let { open, close } = openingHours.periods[arrivalTime.getDay()];
+  return (
+    constructTimePoint(open, utcOffsetMinutes) <
+    arrivalTime <
+    constructTimePoint(close, utcOffsetMinutes)
+  );
 }
 
 function feasibilityFilter(option, settings) {
-  const { extracted } = option;
-  const { preferredFare, preferredDuration, budget, minRating } = settings;
+  const {
+    place: { currentOpeningHours, utcOffsetMinutes },
+    extracted: { fare, duration, priceLevel, rating },
+  } = option;
+  const { departureTime, preferredFare, preferredDuration, budget, minRating } =
+    settings;
   return !(
-    (preferredFare.isStrong && extracted.fare > preferredFare.fare) ||
-    (preferredDuration.isStrong &&
-      extracted.duration > preferredDuration.duration) ||
-    extracted.priceLevel > budget ||
-    extracted.rating > minRating
+    (preferredFare.isStrong && fare > preferredFare.fare) ||
+    (preferredDuration.isStrong && duration > preferredDuration.duration) ||
+    priceLevel > budget ||
+    rating > minRating ||
+    !openOnArrival(
+      departureTime,
+      duration,
+      currentOpeningHours,
+      utcOffsetMinutes
+    )
   );
 }
 
@@ -83,7 +114,6 @@ module.exports = {
   getEmbedder,
   cosineSimilarity,
   feasibilityFilter,
-  refetch,
   getAlignedInterests,
   normalizeScores,
 };
