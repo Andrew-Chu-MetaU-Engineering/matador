@@ -40,14 +40,19 @@ async function calculateInterestScores(query, interests, options) {
 }
 
 function calculatePreferenceScores(settings, options) {
-  const { budget, minRating, goodForChildren, goodForGroups, isAccessible } =
-    settings;
+  const {
+    budget,
+    minRating,
+    goodForChildren,
+    goodForGroups,
+    isAccessible: preferAccessible,
+  } = settings;
   const userVector = [
     recommendUtils.biasPreference(budget, true),
     recommendUtils.biasPreference(minRating, false),
-    +goodForChildren,
-    +goodForGroups,
-    +isAccessible,
+    goodForChildren ? 1 : 0,
+    goodForGroups ? 1 : 0,
+    preferAccessible ? 1 : 0,
   ];
 
   const preferenceScores = new Map();
@@ -59,7 +64,7 @@ function calculatePreferenceScores(settings, options) {
       rating,
       goodForChildren ? 1 : 0,
       goodForGroups ? 1 : 0,
-      accessibilityScore,
+      preferAccessible ? accessibilityScore : 0, // disregards accessibility in scoring if user does not care
     ];
     preferenceScores.set(
       option.place.id,
