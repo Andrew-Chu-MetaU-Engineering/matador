@@ -135,6 +135,11 @@ async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   return nearInterests;
 }
 
+function biasPreference(value, isDownward) {
+  const BIAS = 0.9;
+  return isDownward ? value ** BIAS : value ** (1 / BIAS);
+}
+
 function normalizeScores(scoresMap) {
   const scores = [...scoresMap.values()];
   const maxScore = Math.max(...scores);
@@ -152,5 +157,6 @@ module.exports = {
   feasibilityFilter,
   refetch,
   getAlignedInterests,
+  biasPreference,
   normalizeScores,
 };
