@@ -1,6 +1,11 @@
 const fetchUtils = require("./FetchResultsUtils");
 const recommendUtils = require("./RecommendUtils");
-const { NUM_RECOMMENDATIONS } = process.env;
+const {
+  NUM_RECOMMENDATIONS,
+  INTEREST_SCORE_WEIGHT,
+  PREFERENCE_SCORE_WEIGHT,
+  TRANSIT_SCORE_WEIGHT,
+} = process.env;
 
 async function calculateInterestScores(query, interests, options) {
   const transformer = await recommendUtils.getTransformer();
@@ -116,16 +121,17 @@ async function recommend(query, interests, settings) {
   const preferenceScores = calculatePreferenceScores(settings, options);
   const transitScores = calculateTransitScores(options);
 
-  const combinedScores = new Map();
-  options.map((option) => {
-    const { id } = option.place;
-    combinedScores.set(
-      id,
-      0.4 * interestScores.get(id) +
-        0.3 * preferenceScores.get(id) +
-        0.3 * transitScores.get(id)
+  const combinedScoresComparator = (a, b) => {
+    const aId = a.place.id;
+    const bId = b.place.id;
+    return (
+      INTEREST_SCORE_WEIGHT *
+        (interestScores.get(aId) - interestScores.get(bId)) +
+      PREFERENCE_SCORE_WEIGHT *
+        (preferenceScores.get(aId) - preferenceScores.get(bId)) +
+      TRANSIT_SCORE_WEIGHT * (transitScores.get(aId) - transitScores.get(bId))
     );
-  });
+  };
 
-  return combinedScores;
+  return options.sort(combinedScoresComparator);
 }
