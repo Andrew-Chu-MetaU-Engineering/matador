@@ -2,39 +2,81 @@ require("dotenv").config();
 const {
   GOOGLE_API_KEY,
   COMPUTE_ROUTES_ENDPOINT,
+  COMPUTE_ROUTEMATRIX_ENDPOINT,
   TEXTSEARCH_PLACES_ENDPOINT,
   NEARBY_SEARCH_RADIUS_METERS,
 } = process.env;
 
 async function fetchRoute(originAddress, destinationAddress) {
   // computes route from origin to destination and their related transit fares and durations
-  const FIELDS = [
-    "routes.duration",
-    "routes.polyline",
-    "routes.travel_advisory.transitFare",
-    "routes.legs.stepsOverview",
-    "routes.viewport",
-  ];
+  try {
+    const FIELDS = [
+      "routes.duration",
+      "routes.polyline",
+      "routes.travel_advisory.transitFare",
+      "routes.legs.stepsOverview",
+      "routes.viewport",
+    ];
 
-  const response = await fetch(new URL(COMPUTE_ROUTES_ENDPOINT), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": GOOGLE_API_KEY,
-      "X-Goog-FieldMask": FIELDS.join(),
-    },
-    body: JSON.stringify({
-      origin: {
-        address: originAddress,
+    const response = await fetch(new URL(COMPUTE_ROUTES_ENDPOINT), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_API_KEY,
+        "X-Goog-FieldMask": FIELDS.join(),
       },
-      destination: {
-        address: destinationAddress,
+      body: JSON.stringify({
+        origin: {
+          address: originAddress,
+        },
+        destination: {
+          address: destinationAddress,
+        },
+        travelMode: "TRANSIT",
+        computeAlternativeRoutes: false,
+      }),
+    });
+    return await response.json();
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+async function fetchRouteMatrix(originAddress, destinationAddresses) {
+  // computes route from origin to destination and their related transit fares and durations
+  try {
+    const FIELDS = ["duration", "travel_advisory.transitFare", "condition"];
+
+    const requestBody = {
+      origins: {
+        waypoint: {
+          address: originAddress,
+        },
       },
       travelMode: "TRANSIT",
-      computeAlternativeRoutes: false,
-    }),
-  });
-  return await response.json();
+    };
+
+    requestBody.destinations = Object.values(
+      destinationAddresses.map((address) => ({
+        waypoint: {
+          address: address,
+        },
+      }))
+    );
+
+    const response = await fetch(new URL(COMPUTE_ROUTEMATRIX_ENDPOINT), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_API_KEY,
+        "X-Goog-FieldMask": FIELDS.join(),
+      },
+      body: JSON.stringify(requestBody),
+    });
+    return await response.json();
+  } catch (error) {
+    console.log(error.message);
+  }
 }
 
 async function fetchPlaces(
@@ -113,27 +155,24 @@ async function getOptions(
     nextPageToken
   );
 
-  // TODO transition to Route Matrix API
-  const routesPromises = places.map((place) =>
-    fetchRoute(originAddress, place.formattedAddress)
+  const routesData = await fetchRouteMatrix(
+    originAddress,
+    places.map((place) => place.formattedAddress)
   );
-  const routes = await Promise.all(routesPromises);
 
   let options = [];
   for (const [i, place] of places.entries()) {
-    for (const route of routes[i].routes) {
-      let placeRoutes = {
-        place: place,
-        route: route,
-        extracted: {
-          priceLevel: parsePriceLevel(place),
-          accessibilityScore: parseAccessibility(place),
-          fare: calculateFare(route),
-          duration: parseDuration(route),
-        },
-      };
-      options.push(placeRoutes);
-    }
+    const route = routesData[i];
+    let placeRoutes = {
+      place: place,
+      extracted: {
+        priceLevel: parsePriceLevel(place),
+        accessibilityScore: parseAccessibility(place),
+        fare: calculateFare(route),
+        duration: parseDuration(route),
+      },
+    };
+    options.push(placeRoutes);
   }
   return { options: options, nextPageToken: newNextPageToken };
 }
@@ -178,20 +217,9 @@ function calculateFare(route) {
   return parseInt(units) + nanos * 10 ** -9;
 }
 
-function recommend(profile, options) {
-  // TODO build out the recommendation system
-  // TODO use profile
-  options.sort((a, b) =>
-    calculateFare(a.route) === calculateFare(b.route)
-      ? parseDuration(a.route) - parseDuration(b.route)
-      : calculateFare(a.route) - calculateFare(b.route)
-  );
-  return options;
-}
-
 module.exports = {
   fetchRoute,
+  fetchRouteMatrix,
   fetchPlaces,
   getOptions,
-  recommend,
 };

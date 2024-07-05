@@ -19,6 +19,18 @@ router.get("/computeRoute", async (req, res) => {
   }
 });
 
+router.get("/computeRouteMatrix", async (req, res) => {
+  try {
+    const data = await utils.fetchRouteMatrix(
+      req.query.originAddress,
+      req.query.destinationAddresses
+    );
+    res.status(200).send(data);
+  } catch (error) {
+    res.status(500);
+  }
+});
+
 router.get("/nearbyPlaces", async (req, res) => {
   try {
     const data = await utils.fetchPlaces(
