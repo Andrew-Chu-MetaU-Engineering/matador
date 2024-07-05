@@ -43,8 +43,8 @@ function calculatePreferenceScores(settings, options) {
   const { budget, minRating, goodForChildren, goodForGroups, isAccessible } =
     settings;
   const userVector = [
-    biasPreference(budget, true),
-    biasPreference(minRating, false),
+    recommendUtils.biasPreference(budget, true),
+    recommendUtils.biasPreference(minRating, false),
     +goodForChildren,
     +goodForGroups,
     +isAccessible,
@@ -80,11 +80,6 @@ function calculateTransitScores(options) {
     );
   }
   return recommendUtils.normalizeScores(transitScores);
-}
-
-function biasPreference(value, isDownward) {
-  const BIAS = 0.9;
-  return isDownward ? value ** BIAS : value ** (1 / BIAS);
 }
 
 async function recommend(query, interests, settings) {
