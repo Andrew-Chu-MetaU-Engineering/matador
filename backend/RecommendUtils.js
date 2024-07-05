@@ -1,3 +1,5 @@
+const fetchUtils = require("./FetchResultsUtils");
+
 async function getTransformer() {
   TransformersApi = Function('return import("@xenova/transformers")')();
   const { pipeline } = await TransformersApi;
@@ -66,8 +68,8 @@ function openOnArrival(
 
 function feasibilityFilter(option, settings) {
   const {
-    place: { currentOpeningHours, utcOffsetMinutes },
-    extracted: { fare, duration, priceLevel, rating },
+    place: { rating, currentOpeningHours, utcOffsetMinutes },
+    extracted: { fare, duration, priceLevel },
   } = option;
   const { departureTime, preferredFare, preferredDuration, budget, minRating } =
     settings;
@@ -75,7 +77,7 @@ function feasibilityFilter(option, settings) {
     (preferredFare.isStrong && fare > preferredFare.fare) ||
     (preferredDuration.isStrong && duration > preferredDuration.duration) ||
     priceLevel > budget ||
-    rating > minRating ||
+    rating < minRating ||
     !openOnArrival(
       departureTime,
       duration,
@@ -83,6 +85,30 @@ function feasibilityFilter(option, settings) {
       utcOffsetMinutes
     )
   );
+}
+
+async function refetch(
+  options,
+  nextPageToken,
+  numRecommendations,
+  searchParameters
+) {
+  while (options.length < numRecommendations) {
+    let { options: nextOptions, nextPageToken: refetchNextPageToken } =
+      await fetchUtils.getOptions(
+        ...searchParameters,
+        numRecommendations - options.length,
+        false,
+        nextPageToken
+      );
+
+    if (nextOptions == null) {
+      break;
+    } else {
+      options.push(...nextOptions);
+      nextPageToken = refetchNextPageToken;
+    }
+  }
 }
 
 async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
@@ -114,6 +140,7 @@ module.exports = {
   getEmbedder,
   cosineSimilarity,
   feasibilityFilter,
+  refetch,
   getAlignedInterests,
   normalizeScores,
 };

@@ -1,5 +1,6 @@
 const fetchUtils = require("./FetchResultsUtils");
 const recommendUtils = require("./RecommendUtils");
+const { NUM_RECOMMENDATIONS } = process.env;
 
 async function calculateInterestScores(query, interests, options) {
   const transformer = await recommendUtils.getTransformer();
@@ -82,7 +83,7 @@ function biasPreference(value, isDownward) {
 }
 
 async function recommend() {
-  const QUERY = "gyms near mountain view";
+  const QUERY = "tacos near mountain view";
   const INTERESTS = ["reading", "fine dining", "outdoor activities"];
   const SETTINGS = {
     originAddress: "900 High School Way, Mountain View, CA 94041",
@@ -92,15 +93,15 @@ async function recommend() {
     },
     departureTime: new Date(Date.now()).toISOString(),
     preferredFare: {
-      fare: 3.5,
-      isStrong: false,
-    },
-    preferredDuration: {
-      duration: 5500,
+      fare: 2.5,
       isStrong: true,
     },
-    budget: 2,
-    minRating: 4,
+    preferredDuration: {
+      duration: 4000,
+      isStrong: true,
+    },
+    budget: 1,
+    minRating: 4.5,
     goodForChildren: false,
     goodForGroups: false,
     isAccessible: true,
@@ -110,31 +111,41 @@ async function recommend() {
   let interests = INTERESTS;
   let settings = SETTINGS;
 
-  let options = await fetchUtils.getOptions(
-    query,
-    settings.originAddress,
-    settings.center.latitude,
-    settings.center.longitude
-  );
+  let { options, nextPageToken: initialNextPageToken } =
+    await fetchUtils.getOptions(
+      query,
+      settings.originAddress,
+      settings.center.latitude,
+      settings.center.longitude,
+      NUM_RECOMMENDATIONS,
+      true
+    );
 
   options = options.filter((option) =>
     recommendUtils.feasibilityFilter(option, settings)
   );
+  await recommendUtils.refetch(
+    options,
+    initialNextPageToken,
+    NUM_RECOMMENDATIONS,
+    [
+      query,
+      settings.originAddress,
+      settings.center.latitude,
+      settings.center.longitude,
+    ]
+  );
+
   // TODO to be implemented: refetch options if number of options is insufficient
 
   // TODO generate interest, preference, and transit vector for each option in one iteration
 
-  // interest
   const interestScores = await calculateInterestScores(
     query,
     interests,
     options
   );
-
-  // preference
   const preferenceScores = calculatePreferenceScores(settings, options);
-
-  // transit
   const transitScores = calculateTransitScores(options);
 
   const combinedScores = new Map();

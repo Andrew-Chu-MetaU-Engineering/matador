@@ -4,7 +4,6 @@ const {
   COMPUTE_ROUTES_ENDPOINT,
   TEXTSEARCH_PLACES_ENDPOINT,
   NEARBY_SEARCH_RADIUS_METERS,
-  MAX_NUM_PLACES_RESULTS,
 } = process.env;
 
 async function fetchRoute(originAddress, destinationAddress) {
@@ -38,9 +37,17 @@ async function fetchRoute(originAddress, destinationAddress) {
   return await response.json();
 }
 
-async function fetchPlaces(searchQuery, centerLatitude, centerLongitude) {
+async function fetchPlaces(
+  searchQuery,
+  centerLatitude,
+  centerLongitude,
+  numRequests,
+  isFirstRequest,
+  nextPageToken = null
+) {
   // retrieves locations matching query text, with a bias toward a geographical radius
   const FIELDS = [
+    "nextPageToken",
     "places.id",
     "places.displayName.text",
     "places.types",
@@ -54,6 +61,28 @@ async function fetchPlaces(searchQuery, centerLatitude, centerLongitude) {
     "places.goodForGroups",
     "places.accessibilityOptions",
   ];
+  const requestBody = {
+    textQuery: searchQuery,
+    locationBias: {
+      circle: {
+        center: {
+          latitude: centerLatitude,
+          longitude: centerLongitude,
+        },
+        radius: NEARBY_SEARCH_RADIUS_METERS,
+      },
+    },
+    pageSize: numRequests,
+  };
+
+  if (!isFirstRequest) {
+    if (nextPageToken == null) {
+      return {};
+    } else {
+      requestBody.pageToken = nextPageToken;
+    }
+  }
+
   const response = await fetch(new URL(TEXTSEARCH_PLACES_ENDPOINT), {
     method: "POST",
     headers: {
@@ -61,19 +90,7 @@ async function fetchPlaces(searchQuery, centerLatitude, centerLongitude) {
       "X-Goog-Api-Key": GOOGLE_API_KEY,
       "X-Goog-FieldMask": FIELDS.join(),
     },
-    body: JSON.stringify({
-      textQuery: searchQuery,
-      locationBias: {
-        circle: {
-          center: {
-            latitude: centerLatitude,
-            longitude: centerLongitude,
-          },
-          radius: NEARBY_SEARCH_RADIUS_METERS,
-        },
-      },
-      pageSize: MAX_NUM_PLACES_RESULTS,
-    }),
+    body: JSON.stringify(requestBody),
   });
   return await response.json();
 }
@@ -82,12 +99,18 @@ async function getOptions(
   searchQuery,
   originAddress,
   centerLatitude,
-  centerLongitude
+  centerLongitude,
+  numRequests,
+  isFirstRequest,
+  nextPageToken = null
 ) {
-  const { places } = await fetchPlaces(
+  const { places, nextPageToken: newNextPageToken } = await fetchPlaces(
     searchQuery,
     centerLatitude,
-    centerLongitude
+    centerLongitude,
+    numRequests,
+    isFirstRequest,
+    nextPageToken
   );
 
   // TODO transition to Route Matrix API
@@ -112,7 +135,7 @@ async function getOptions(
       options.push(placeRoutes);
     }
   }
-  return options;
+  return { options: options, nextPageToken: newNextPageToken };
 }
 
 function parsePriceLevel(place) {
