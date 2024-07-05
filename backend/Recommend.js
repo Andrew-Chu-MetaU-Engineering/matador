@@ -124,18 +124,14 @@ async function recommend() {
   options = options.filter((option) =>
     recommendUtils.feasibilityFilter(option, settings)
   );
+
   await recommendUtils.refetch(
     options,
     initialNextPageToken,
     NUM_RECOMMENDATIONS,
-    [
-      query,
-      settings.originAddress,
-      settings.center.latitude,
-      settings.center.longitude,
-    ]
+    settings,
+    query
   );
-
   // TODO to be implemented: refetch options if number of options is insufficient
 
   // TODO generate interest, preference, and transit vector for each option in one iteration

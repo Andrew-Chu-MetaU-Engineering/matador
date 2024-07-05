@@ -1,4 +1,5 @@
 const fetchUtils = require("./FetchResultsUtils");
+const { MAX_REFETCH_TRIES } = process.env;
 
 async function getTransformer() {
   TransformersApi = Function('return import("@xenova/transformers")')();
@@ -91,12 +92,18 @@ async function refetch(
   options,
   nextPageToken,
   numRecommendations,
-  searchParameters
+  settings,
+  query
 ) {
-  while (options.length < numRecommendations) {
+  let retries = 0;
+  while (options.length < numRecommendations && retries < MAX_REFETCH_TRIES) {
+    retries += 1;
     let { options: nextOptions, nextPageToken: refetchNextPageToken } =
       await fetchUtils.getOptions(
-        ...searchParameters,
+        query,
+        settings.originAddress,
+        settings.center.latitude,
+        settings.center.longitude,
         numRecommendations - options.length,
         false,
         nextPageToken
@@ -105,6 +112,9 @@ async function refetch(
     if (nextOptions == null) {
       break;
     } else {
+      nextOptions = nextOptions.filter((option) =>
+        feasibilityFilter(option, settings)
+      );
       options.push(...nextOptions);
       nextPageToken = refetchNextPageToken;
     }
