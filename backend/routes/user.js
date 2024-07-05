@@ -45,28 +45,14 @@ router.delete("/:id", async (req, res) => {
   res.status(204).json(deletedUser);
 });
 
-router.put("/:id/hobby", async (req, res) => {
+router.put("/:id/interest", async (req, res) => {
   const user = await prisma.user.update({
     where: {
       id: req.params.id,
     },
     data: {
-      hobbies: {
-        push: req.body.hobby,
-      },
-    },
-  });
-  res.status(204).json(user);
-});
-
-router.put("/:id/cuisine", async (req, res) => {
-  const user = await prisma.user.update({
-    where: {
-      id: req.params.id,
-    },
-    data: {
-      cuisines: {
-        push: req.body.cuisine,
+      interests: {
+        push: req.body.interest,
       },
     },
   });
