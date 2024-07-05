@@ -157,5 +157,3 @@ async function recommend() {
 
   return combinedScores;
 }
-
-recommend();
