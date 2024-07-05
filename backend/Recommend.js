@@ -90,6 +90,7 @@ async function recommend() {
       latitude: 37.4859,
       longitude: -122.1461,
     },
+    departureTime: new Date(Date.now()).toISOString(),
     preferredFare: {
       fare: 3.5,
       isStrong: false,

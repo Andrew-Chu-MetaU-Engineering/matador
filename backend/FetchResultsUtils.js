@@ -42,12 +42,13 @@ async function fetchPlaces(searchQuery, centerLatitude, centerLongitude) {
   // retrieves locations matching query text, with a bias toward a geographical radius
   const FIELDS = [
     "places.id",
-    "places.displayName",
+    "places.displayName.text",
     "places.types",
     "places.formattedAddress",
     "places.rating",
     "places.priceLevel",
-    "places.currentOpeningHours",
+    "places.currentOpeningHours.periods",
+    "places.utcOffsetMinutes",
     "places.editorialSummary",
     "places.goodForChildren",
     "places.goodForGroups",
