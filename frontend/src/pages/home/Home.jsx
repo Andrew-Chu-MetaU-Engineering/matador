@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import PropTypes from 'prop-types'
+import PropTypes from "prop-types";
 import { Paper, Box } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import TransitMap from "./TransitMap";
-import { Search, SearchResult } from "./Search";
+import Search from "./Search";
+import SearchResult from "./SearchResult";
 import "./Home.css";
 
 export default function Home({ user }) {
