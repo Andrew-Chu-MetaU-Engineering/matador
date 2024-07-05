@@ -82,35 +82,7 @@ function biasPreference(value, isDownward) {
   return isDownward ? value ** BIAS : value ** (1 / BIAS);
 }
 
-async function recommend() {
-  const QUERY = "tacos near mountain view";
-  const INTERESTS = ["reading", "fine dining", "outdoor activities"];
-  const SETTINGS = {
-    originAddress: "900 High School Way, Mountain View, CA 94041",
-    center: {
-      latitude: 37.4859,
-      longitude: -122.1461,
-    },
-    departureTime: new Date(Date.now()).toISOString(),
-    preferredFare: {
-      fare: 2.5,
-      isStrong: true,
-    },
-    preferredDuration: {
-      duration: 4000,
-      isStrong: true,
-    },
-    budget: 1,
-    minRating: 4.5,
-    goodForChildren: false,
-    goodForGroups: false,
-    isAccessible: true,
-  };
-
-  let query = QUERY;
-  let interests = INTERESTS;
-  let settings = SETTINGS;
-
+async function recommend(query, interests, settings) {
   let { options, nextPageToken: initialNextPageToken } =
     await fetchUtils.getOptions(
       query,
