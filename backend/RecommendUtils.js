@@ -1,3 +1,6 @@
+const fetchUtils = require("./FetchResultsUtils");
+const { MAX_REFETCH_TRIES } = process.env;
+
 async function getTransformer() {
   TransformersApi = Function('return import("@xenova/transformers")')();
   const { pipeline } = await TransformersApi;
@@ -66,8 +69,8 @@ function openOnArrival(
 
 function feasibilityFilter(option, settings) {
   const {
-    place: { currentOpeningHours, utcOffsetMinutes },
-    extracted: { fare, duration, priceLevel, rating },
+    place: { rating, currentOpeningHours, utcOffsetMinutes },
+    extracted: { fare, duration, priceLevel },
   } = option;
   const { departureTime, preferredFare, preferredDuration, budget, minRating } =
     settings;
@@ -75,7 +78,7 @@ function feasibilityFilter(option, settings) {
     (preferredFare.isStrong && fare > preferredFare.fare) ||
     (preferredDuration.isStrong && duration > preferredDuration.duration) ||
     priceLevel > budget ||
-    rating > minRating ||
+    rating < minRating ||
     !openOnArrival(
       departureTime,
       duration,
@@ -83,6 +86,39 @@ function feasibilityFilter(option, settings) {
       utcOffsetMinutes
     )
   );
+}
+
+async function refetch(
+  options,
+  nextPageToken,
+  numRecommendations,
+  settings,
+  query
+) {
+  let retries = 0;
+  while (options.length < numRecommendations && retries < MAX_REFETCH_TRIES) {
+    retries += 1;
+    let { options: nextOptions, nextPageToken: refetchNextPageToken } =
+      await fetchUtils.getOptions(
+        query,
+        settings.originAddress,
+        settings.center.latitude,
+        settings.center.longitude,
+        numRecommendations - options.length,
+        false,
+        nextPageToken
+      );
+
+    if (nextOptions == null) {
+      break;
+    } else {
+      nextOptions = nextOptions.filter((option) =>
+        feasibilityFilter(option, settings)
+      );
+      options.push(...nextOptions);
+      nextPageToken = refetchNextPageToken;
+    }
+  }
 }
 
 async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
@@ -114,6 +150,7 @@ module.exports = {
   getEmbedder,
   cosineSimilarity,
   feasibilityFilter,
+  refetch,
   getAlignedInterests,
   normalizeScores,
 };
