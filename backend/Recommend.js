@@ -97,7 +97,6 @@ async function recommend(query, interests, settings) {
       NUM_RECOMMENDATIONS,
       true
     );
-
   options = options.filter((option) =>
     recommendUtils.feasibilityFilter(option, settings)
   );
@@ -109,10 +108,8 @@ async function recommend(query, interests, settings) {
     settings,
     query
   );
-  // TODO to be implemented: refetch options if number of options is insufficient
 
   // TODO generate interest, preference, and transit vector for each option in one iteration
-
   const interestScores = await calculateInterestScores(
     query,
     interests,
@@ -135,3 +132,5 @@ async function recommend(query, interests, settings) {
 
   return options.sort(combinedScoresComparator);
 }
+
+module.exports = { recommend };
