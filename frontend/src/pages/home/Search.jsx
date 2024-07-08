@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Paper, Box, ActionIcon, TextInput, NumberInput } from "@mantine/core";
 
 import {
-  IconSearch,
+  IconMapSearch,
+  IconMap2,
   IconAdjustments,
   IconArrowRight,
 } from "@tabler/icons-react";
@@ -15,6 +16,15 @@ export default function Search({ form, handleSearch }) {
   return (
     <Paper id="search-pane" shadow="xs" radius="md">
       <form onSubmit={form.onSubmit((values) => handleSearch(values))}>
+        <TextInput
+          key={form.key("originAddress")}
+          {...form.getInputProps("originAddress")}
+          radius="md"
+          size="md"
+          mb="xs"
+          placeholder="Origin address"
+          leftSection={<IconMap2 stroke={1.5} />}
+        />
         <span id="searchbar-span">
           <div id="searchbar-wrapper">
             <TextInput
@@ -24,7 +34,7 @@ export default function Search({ form, handleSearch }) {
               radius="md"
               size="md"
               placeholder="Search"
-              leftSection={<IconSearch stroke={1.5} />}
+              leftSection={<IconMapSearch stroke={1.5} />}
               rightSection={
                 <ActionIcon type="submit" radius="sm" variant="light">
                   <IconArrowRight stroke={1.5} />

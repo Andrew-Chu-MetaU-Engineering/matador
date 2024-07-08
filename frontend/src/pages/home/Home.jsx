@@ -85,6 +85,7 @@ export default function Home({ userId }) {
     mode: "uncontrolled",
     initialValues: {
       query: "",
+      originAddress: "",
       fare: null, // null to display no value
       duration: null,
     },
