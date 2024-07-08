@@ -117,6 +117,11 @@ export default function Search({ form, handleSearch }) {
                 />
               </Box>
             </Box>
+            <Box id="misc-preferences">
+              <Checkbox label="Good for children" />
+              <Checkbox label="Good for groups" />
+              <Checkbox label="Wheelchair accessible" />
+            </Box>
           </Box>
         )}
       </form>

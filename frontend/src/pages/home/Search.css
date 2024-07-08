@@ -49,3 +49,11 @@
   display: flex;
   align-items: center;
 }
+
+#misc-preferences {
+  margin-top: 1rem;
+}
+
+#misc-preferences > * {
+  margin-top: 0.25rem;
+}
