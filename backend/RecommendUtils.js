@@ -74,7 +74,7 @@ function feasibilityFilter(option, settings) {
   } = option;
   const { departureTime, preferredFare, preferredDuration, budget, minRating } =
     settings;
-  return !(
+  const isFeasible = !(
     (preferredFare.isStrong && fare > preferredFare.fare) ||
     (preferredDuration.isStrong && duration > preferredDuration.duration) ||
     priceLevel > budget ||
@@ -86,6 +86,7 @@ function feasibilityFilter(option, settings) {
       utcOffsetMinutes
     )
   );
+  return isFeasible;
 }
 
 async function refetch(
