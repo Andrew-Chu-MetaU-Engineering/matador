@@ -40,6 +40,7 @@ async function calculateInterestScores(query, interests, options) {
 }
 
 function calculatePreferenceScores(settings, options) {
+  const MAX_POSSIBLE_RATING = 5;
   const {
     budget,
     minRating,
@@ -49,7 +50,7 @@ function calculatePreferenceScores(settings, options) {
   } = settings;
   const userVector = [
     recommendUtils.biasPreference(budget),
-    recommendUtils.biasPreference(minRating),
+    recommendUtils.biasPreference(minRating / MAX_POSSIBLE_RATING),
     goodForChildren ? 1 : 0,
     goodForGroups ? 1 : 0,
     preferAccessible ? 1 : 0,
@@ -61,7 +62,7 @@ function calculatePreferenceScores(settings, options) {
     const { priceLevel, accessibilityScore } = option.extracted;
     const optionVector = [
       priceLevel,
-      rating,
+      rating / MAX_POSSIBLE_RATING,
       goodForChildren ? 1 : 0,
       goodForGroups ? 1 : 0,
       preferAccessible ? accessibilityScore : 0, // disregards accessibility in scoring if user does not care
