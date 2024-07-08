@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
-  onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { useToggle, upperFirst } from "@mantine/hooks";
 import {
   TextInput,
   PasswordInput,
@@ -20,28 +17,30 @@ import {
 } from "@mantine/core";
 import { auth } from "./firebase-config";
 
-export default function Authentication({ user, setUser }) {
+export default function Authentication() {
   const navigate = useNavigate();
-  const [type, toggle] = useToggle(["login", "register"]);
+  const isLoginPage = useLocation().state?.isLogin;
+
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
+    if (isLoginPage != null) {
+      setIsLogin(isLoginPage);
+    }
   }, []);
 
   async function authenticate() {
     try {
-      if (type === "login") {
+      if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
       }
       setEmail("");
       setPassword("");
-      navigate("/")
+      navigate("/");
     } catch (error) {
       console.log(error.message);
     }
@@ -81,29 +80,20 @@ export default function Authentication({ user, setUser }) {
               component="button"
               type="button"
               c="dimmed"
-              onClick={() => toggle()}
+              onClick={() => setIsLogin((prev) => !prev)}
               size="xs"
             >
-              {type === "register"
-                ? "Already have an account? Login"
-                : "Don't have an account? Register"}
+              {isLogin
+                ? "Don't have an account? Register"
+                : "Already have an account? Login"}
             </Anchor>
             <Button onClick={authenticate} radius="md">
-              {upperFirst(type)}
+              {isLogin ? "Login" : "Register"}
             </Button>
           </Group>
         </Paper>
       </Container>
-
-      {/* TODO implement login page sign out*/}
-      <h4> User Logged In: </h4>
-      {user?.email}
       <button onClick={logout}> Sign Out </button>
     </div>
   );
 }
-
-Authentication.propTypes = {
-  user: PropTypes.object,
-  setUser: PropTypes.func.isRequired,
-};
