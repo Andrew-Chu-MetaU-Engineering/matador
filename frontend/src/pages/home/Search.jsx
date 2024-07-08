@@ -48,7 +48,7 @@ export default function Search({ form, handleSearch }) {
               placeholder="Search"
               leftSection={<IconMapSearch stroke={1.5} />}
               rightSection={
-                <ActionIcon type="submit" radius="sm" variant="light">
+                <ActionIcon type="submit" radius="sm" variant="filled">
                   <IconArrowRight stroke={1.5} />
                 </ActionIcon>
               }
@@ -57,20 +57,20 @@ export default function Search({ form, handleSearch }) {
           <ActionIcon
             id="filters-button"
             onClick={() => setShowFilters(!showFilters)}
-            variant="filled"
+            variant="light"
           >
             <IconAdjustments stroke={1.5} />
           </ActionIcon>
         </span>
         {showFilters && (
           <Box id="search-filters">
-            <Divider my="md" />
+            <Divider mt="md" label="Transit" labelPosition="left" />
             <Box id="transit-filters">
               <Group>
                 <NumberInput
                   key={form.key("fare")}
                   {...form.getInputProps("fare")}
-                  label="Transit fare"
+                  label="Fare"
                   prefix="< $"
                   allowNegative={false}
                   allowDecimal={false}
@@ -82,7 +82,7 @@ export default function Search({ form, handleSearch }) {
                 <NumberInput
                   key={form.key("duration")}
                   {...form.getInputProps("duration")}
-                  label="Transit duration"
+                  label="Travel duration"
                   prefix="< "
                   suffix=" min"
                   allowNegative={false}
@@ -92,7 +92,7 @@ export default function Search({ form, handleSearch }) {
                 <Checkbox size="xs" label="No longer durations" />
               </Group>
             </Box>
-            <Divider my="md" />
+            <Divider mt="md" mb="xs" label="Preferences" labelPosition="left" />
             <Box id="preference-filters">
               <Box id="star-rating-wrapper">
                 <Text size="sm" fw={500}>
