@@ -18,10 +18,34 @@
 
 #search-filters {
   display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
+  flex-direction: column;
 }
 
-#search-filters > * {
+#transit-filters {
+  display: flex;
+  justify-content: space-between;
+}
+
+#transit-filters > * {
   width: 48%;
+}
+
+#preference-filters {
+  display: flex;
+  justify-content: space-between;
+}
+
+#star-rating-wrapper,
+#budget-wrapper {
+  width: 48%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#star-rating-spacer {
+  width: 100%;
+  height: 2rem;
+  display: flex;
+  align-items: center;
 }

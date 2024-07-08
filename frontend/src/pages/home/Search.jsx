@@ -4,10 +4,14 @@ import {
   Paper,
   Group,
   Box,
+  Text,
+  Divider,
   ActionIcon,
   TextInput,
   NumberInput,
   Checkbox,
+  Rating,
+  SegmentedControl,
 } from "@mantine/core";
 
 import {
@@ -60,31 +64,59 @@ export default function Search({ form, handleSearch }) {
         </span>
         {showFilters && (
           <Box id="search-filters">
-            <Group>
-              <NumberInput
-                key={form.key("fare")}
-                {...form.getInputProps("fare")}
-                label="Transit fare"
-                prefix="< $"
-                allowNegative={false}
-                allowDecimal={false}
-                thousandSeparator=","
-              />
-              <Checkbox size="xs" label="No higher fares" />
-            </Group>
-            <Group>
-              <NumberInput
-                key={form.key("duration")}
-                {...form.getInputProps("duration")}
-                label="Transit duration"
-                prefix="< "
-                suffix=" min"
-                allowNegative={false}
-                allowDecimal={false}
-                thousandSeparator=","
-              />
-              <Checkbox size="xs" label="No longer durations" />
-            </Group>
+            <Divider my="md" />
+            <Box id="transit-filters">
+              <Group>
+                <NumberInput
+                  key={form.key("fare")}
+                  {...form.getInputProps("fare")}
+                  label="Transit fare"
+                  prefix="< $"
+                  allowNegative={false}
+                  allowDecimal={false}
+                  thousandSeparator=","
+                />
+                <Checkbox size="xs" label="No higher fares" />
+              </Group>
+              <Group>
+                <NumberInput
+                  key={form.key("duration")}
+                  {...form.getInputProps("duration")}
+                  label="Transit duration"
+                  prefix="< "
+                  suffix=" min"
+                  allowNegative={false}
+                  allowDecimal={false}
+                  thousandSeparator=","
+                />
+                <Checkbox size="xs" label="No longer durations" />
+              </Group>
+            </Box>
+            <Divider my="md" />
+            <Box id="preference-filters">
+              <Box id="star-rating-wrapper">
+                <Text size="sm" fw={500}>
+                  Minimum rating
+                </Text>
+                <Box id="star-rating-spacer">
+                  <Rating fractions={2} size="md" />
+                </Box>
+              </Box>
+              <Box id="budget-wrapper">
+                <Text size="sm" fw={500}>
+                  Budget
+                </Text>
+                <SegmentedControl
+                  size="xs"
+                  data={[
+                    { label: "$", value: "1" },
+                    { label: "$$", value: "2" },
+                    { label: "$$$", value: "3" },
+                    { label: "$$$$", value: "4" },
+                  ]}
+                />
+              </Box>
+            </Box>
           </Box>
         )}
       </form>
