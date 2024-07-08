@@ -48,8 +48,8 @@ function calculatePreferenceScores(settings, options) {
     isAccessible: preferAccessible,
   } = settings;
   const userVector = [
-    recommendUtils.biasPreference(budget, true),
-    recommendUtils.biasPreference(minRating, false),
+    recommendUtils.biasPreference(budget),
+    recommendUtils.biasPreference(minRating),
     goodForChildren ? 1 : 0,
     goodForGroups ? 1 : 0,
     preferAccessible ? 1 : 0,
