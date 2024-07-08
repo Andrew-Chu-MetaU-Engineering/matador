@@ -135,9 +135,9 @@ async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   return nearInterests;
 }
 
-function biasPreference(value) {
-  // pulls input values in (0, 1) upward and pushes values >1 downward
-  return value ** BIAS;
+function biasPreference(value, isDownward) {
+  // takes input values in [0, 1]
+  return isDownward ? value ** (1 / BIAS) : value ** BIAS;
 }
 
 function normalizeScores(scoresMap) {
