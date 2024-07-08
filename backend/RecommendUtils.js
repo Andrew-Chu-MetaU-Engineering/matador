@@ -1,5 +1,5 @@
 const fetchUtils = require("./FetchResultsUtils");
-const { MAX_REFETCH_TRIES } = process.env;
+const { MAX_REFETCH_TRIES, BIAS } = process.env;
 
 async function getTransformer() {
   TransformersApi = Function('return import("@xenova/transformers")')();
@@ -136,8 +136,8 @@ async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
 }
 
 function biasPreference(value, isDownward) {
-  const BIAS = 0.9;
-  return isDownward ? value ** BIAS : value ** (1 / BIAS);
+  // takes input values in [0, 1]
+  return isDownward ? value ** (1 / BIAS) : value ** BIAS;
 }
 
 function normalizeScores(scoresMap) {
