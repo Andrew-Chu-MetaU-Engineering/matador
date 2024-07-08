@@ -5,6 +5,8 @@ const {
   INTEREST_SCORE_WEIGHT,
   PREFERENCE_SCORE_WEIGHT,
   TRANSIT_SCORE_WEIGHT,
+  MAX_POSSIBLE_PRICE_LEVEL,
+  MAX_POSSIBLE_RATING,
 } = process.env;
 
 async function calculateInterestScores(query, interests, options) {
@@ -40,8 +42,6 @@ async function calculateInterestScores(query, interests, options) {
 }
 
 function calculatePreferenceScores(settings, options) {
-  const MAX_POSSIBLE_PRICE_LEVEL = 4;
-  const MAX_POSSIBLE_RATING = 5;
   const {
     budget,
     minRating,
