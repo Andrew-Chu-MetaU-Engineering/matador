@@ -25,6 +25,7 @@ export default function Home({ userId }) {
   });
   const [options, setOptions] = useState([]);
   const [route, setRoute] = useState(null);
+  const [mapBounds, setMapBounds] = useState(null);
 
   useEffect(() => {
     if (userId != null) fetchProfile(userId);
@@ -106,6 +107,7 @@ export default function Home({ userId }) {
           <TransitMap
             id="google-map"
             encodedPath={route?.polyline?.encodedPolyline}
+            setMapBounds={setMapBounds}
           />
         </Box>
       </Paper>
