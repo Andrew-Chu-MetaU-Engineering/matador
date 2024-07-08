@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import { Polyline } from "./Polyline";
 
-export default function TransitMap({ encodedPath }) {
+export default function TransitMap({ encodedPath, setMapBounds }) {
   const { VITE_GOOGLE_API_KEY, VITE_DEFAULT_VIEW_LAT, VITE_DEFAULT_VIEW_LNG } =
     import.meta.env;
   return (
@@ -15,6 +15,7 @@ export default function TransitMap({ encodedPath }) {
         defaultZoom={10}
         gestureHandling={"cooperative"}
         disableDefaultUI={true}
+        onBoundsChanged={(e) => setMapBounds(e.detail.bounds)}
       >
         {encodedPath && (
           <Polyline
@@ -30,4 +31,5 @@ export default function TransitMap({ encodedPath }) {
 
 TransitMap.propTypes = {
   encodedPath: PropTypes.string,
+  setMapBounds: PropTypes.func.isRequired,
 };
