@@ -1,9 +1,22 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
-import { Paper, Box, ActionIcon, TextInput, NumberInput } from "@mantine/core";
+import {
+  Paper,
+  Group,
+  Box,
+  Text,
+  Divider,
+  ActionIcon,
+  TextInput,
+  NumberInput,
+  Checkbox,
+  Rating,
+  SegmentedControl,
+} from "@mantine/core";
 
 import {
-  IconSearch,
+  IconMapSearch,
+  IconMap2,
   IconAdjustments,
   IconArrowRight,
 } from "@tabler/icons-react";
@@ -15,6 +28,15 @@ export default function Search({ form, handleSearch }) {
   return (
     <Paper id="search-pane" shadow="xs" radius="md">
       <form onSubmit={form.onSubmit((values) => handleSearch(values))}>
+        <TextInput
+          key={form.key("originAddress")}
+          {...form.getInputProps("originAddress")}
+          radius="md"
+          size="md"
+          mb="xs"
+          placeholder="Origin address"
+          leftSection={<IconMap2 stroke={1.5} />}
+        />
         <span id="searchbar-span">
           <div id="searchbar-wrapper">
             <TextInput
@@ -24,9 +46,9 @@ export default function Search({ form, handleSearch }) {
               radius="md"
               size="md"
               placeholder="Search"
-              leftSection={<IconSearch stroke={1.5} />}
+              leftSection={<IconMapSearch stroke={1.5} />}
               rightSection={
-                <ActionIcon type="submit" radius="sm" variant="light">
+                <ActionIcon type="submit" radius="sm" variant="filled">
                   <IconArrowRight stroke={1.5} />
                 </ActionIcon>
               }
@@ -35,32 +57,71 @@ export default function Search({ form, handleSearch }) {
           <ActionIcon
             id="filters-button"
             onClick={() => setShowFilters(!showFilters)}
-            variant="filled"
+            variant="light"
           >
             <IconAdjustments stroke={1.5} />
           </ActionIcon>
         </span>
         {showFilters && (
           <Box id="search-filters">
-            <NumberInput
-              key={form.key("fare")}
-              {...form.getInputProps("fare")}
-              label="Transit fare"
-              prefix="< $"
-              allowNegative={false}
-              allowDecimal={false}
-              thousandSeparator=","
-            />
-            <NumberInput
-              key={form.key("duration")}
-              {...form.getInputProps("duration")}
-              label="Transit duration"
-              prefix="< "
-              suffix=" min"
-              allowNegative={false}
-              allowDecimal={false}
-              thousandSeparator=","
-            />
+            <Divider mt="md" label="Transit" labelPosition="left" />
+            <Box id="transit-filters">
+              <Group>
+                <NumberInput
+                  key={form.key("fare")}
+                  {...form.getInputProps("fare")}
+                  label="Fare"
+                  prefix="< $"
+                  allowNegative={false}
+                  allowDecimal={false}
+                  thousandSeparator=","
+                />
+                <Checkbox size="xs" label="No higher fares" />
+              </Group>
+              <Group>
+                <NumberInput
+                  key={form.key("duration")}
+                  {...form.getInputProps("duration")}
+                  label="Travel duration"
+                  prefix="< "
+                  suffix=" min"
+                  allowNegative={false}
+                  allowDecimal={false}
+                  thousandSeparator=","
+                />
+                <Checkbox size="xs" label="No longer durations" />
+              </Group>
+            </Box>
+            <Divider mt="md" mb="xs" label="Preferences" labelPosition="left" />
+            <Box id="preference-filters">
+              <Box id="star-rating-wrapper">
+                <Text size="sm" fw={500}>
+                  Minimum rating
+                </Text>
+                <Box id="star-rating-spacer">
+                  <Rating fractions={2} size="md" />
+                </Box>
+              </Box>
+              <Box id="budget-wrapper">
+                <Text size="sm" fw={500}>
+                  Budget
+                </Text>
+                <SegmentedControl
+                  size="xs"
+                  data={[
+                    { label: "$", value: "1" },
+                    { label: "$$", value: "2" },
+                    { label: "$$$", value: "3" },
+                    { label: "$$$$", value: "4" },
+                  ]}
+                />
+              </Box>
+            </Box>
+            <Box id="misc-preferences">
+              <Checkbox label="Good for children" />
+              <Checkbox label="Good for groups" />
+              <Checkbox label="Wheelchair accessible" />
+            </Box>
           </Box>
         )}
       </form>
