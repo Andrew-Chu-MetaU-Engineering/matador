@@ -10,7 +10,7 @@ import Search from "./Search";
 import SearchResult from "./SearchResult";
 import "./Home.css";
 
-export default function Home({ user }) {
+export default function Home({ userId }) {
   const {
     VITE_EXPRESS_API,
     VITE_ORIGIN_ADDRESS,
@@ -28,12 +28,12 @@ export default function Home({ user }) {
   const [mapBounds, setMapBounds] = useState(null);
 
   useEffect(() => {
-    if (user != null) fetchProfile(user);
-  }, [user]);
+    if (userId != null) fetchProfile(userId);
+  }, [userId]);
 
-  async function fetchProfile(user) {
+  async function fetchProfile(userId) {
     try {
-      let url = new URL(`user/${user.uid}`, VITE_EXPRESS_API);
+      let url = new URL(`user/${userId}`, VITE_EXPRESS_API);
 
       const response = await fetch(url);
       if (!response.ok) {
@@ -117,5 +117,5 @@ export default function Home({ user }) {
 }
 
 Home.propTypes = {
-  user: PropTypes.object,
+  userId: PropTypes.string,
 };

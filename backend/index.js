@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const utils = require("./FetchResultsUtils");
+const recommender = require("./Recommend");
 require("dotenv").config();
 
 const googleApiRoute = require("./routes/googleAPI");

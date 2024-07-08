@@ -1,6 +1,11 @@
 const fetchUtils = require("./FetchResultsUtils");
 const recommendUtils = require("./RecommendUtils");
-const { NUM_RECOMMENDATIONS } = process.env;
+const {
+  NUM_RECOMMENDATIONS,
+  INTEREST_SCORE_WEIGHT,
+  PREFERENCE_SCORE_WEIGHT,
+  TRANSIT_SCORE_WEIGHT,
+} = process.env;
 
 async function calculateInterestScores(query, interests, options) {
   const transformer = await recommendUtils.getTransformer();
@@ -35,14 +40,21 @@ async function calculateInterestScores(query, interests, options) {
 }
 
 function calculatePreferenceScores(settings, options) {
-  const { budget, minRating, goodForChildren, goodForGroups, isAccessible } =
-    settings;
+  const MAX_POSSIBLE_PRICE_LEVEL = 4;
+  const MAX_POSSIBLE_RATING = 5;
+  const {
+    budget,
+    minRating,
+    goodForChildren,
+    goodForGroups,
+    isAccessible: preferAccessible,
+  } = settings;
   const userVector = [
-    biasPreference(budget, true),
-    biasPreference(minRating, false),
-    +goodForChildren,
-    +goodForGroups,
-    +isAccessible,
+    recommendUtils.biasPreference(budget / MAX_POSSIBLE_PRICE_LEVEL, true),
+    recommendUtils.biasPreference(minRating / MAX_POSSIBLE_RATING, false),
+    goodForChildren ? 1 : 0,
+    goodForGroups ? 1 : 0,
+    preferAccessible ? 1 : 0,
   ];
 
   const preferenceScores = new Map();
@@ -50,11 +62,11 @@ function calculatePreferenceScores(settings, options) {
     const { rating, goodForChildren, goodForGroups } = option.place;
     const { priceLevel, accessibilityScore } = option.extracted;
     const optionVector = [
-      priceLevel,
-      rating,
+      priceLevel / MAX_POSSIBLE_PRICE_LEVEL,
+      rating / MAX_POSSIBLE_RATING,
       goodForChildren ? 1 : 0,
       goodForGroups ? 1 : 0,
-      accessibilityScore,
+      preferAccessible ? accessibilityScore : 0, // disregards accessibility in scoring if user does not care
     ];
     preferenceScores.set(
       option.place.id,
@@ -77,40 +89,7 @@ function calculateTransitScores(options) {
   return recommendUtils.normalizeScores(transitScores);
 }
 
-function biasPreference(value, isDownward) {
-  const BIAS = 0.9;
-  return isDownward ? value ** BIAS : value ** (1 / BIAS);
-}
-
-async function recommend() {
-  const QUERY = "tacos near mountain view";
-  const INTERESTS = ["reading", "fine dining", "outdoor activities"];
-  const SETTINGS = {
-    originAddress: "900 High School Way, Mountain View, CA 94041",
-    center: {
-      latitude: 37.4859,
-      longitude: -122.1461,
-    },
-    departureTime: new Date(Date.now()).toISOString(),
-    preferredFare: {
-      fare: 2.5,
-      isStrong: true,
-    },
-    preferredDuration: {
-      duration: 4000,
-      isStrong: true,
-    },
-    budget: 1,
-    minRating: 4.5,
-    goodForChildren: false,
-    goodForGroups: false,
-    isAccessible: true,
-  };
-
-  let query = QUERY;
-  let interests = INTERESTS;
-  let settings = SETTINGS;
-
+async function recommend(query, interests, settings) {
   let { options, nextPageToken: initialNextPageToken } =
     await fetchUtils.getOptions(
       query,
@@ -120,7 +99,6 @@ async function recommend() {
       NUM_RECOMMENDATIONS,
       true
     );
-
   options = options.filter((option) =>
     recommendUtils.feasibilityFilter(option, settings)
   );
@@ -132,10 +110,8 @@ async function recommend() {
     settings,
     query
   );
-  // TODO to be implemented: refetch options if number of options is insufficient
 
   // TODO generate interest, preference, and transit vector for each option in one iteration
-
   const interestScores = await calculateInterestScores(
     query,
     interests,
@@ -144,16 +120,19 @@ async function recommend() {
   const preferenceScores = calculatePreferenceScores(settings, options);
   const transitScores = calculateTransitScores(options);
 
-  const combinedScores = new Map();
-  options.map((option) => {
-    const { id } = option.place;
-    combinedScores.set(
-      id,
-      0.4 * interestScores.get(id) +
-        0.3 * preferenceScores.get(id) +
-        0.3 * transitScores.get(id)
+  const combinedScoresComparator = (a, b) => {
+    const aId = a.place.id;
+    const bId = b.place.id;
+    return (
+      INTEREST_SCORE_WEIGHT *
+        (interestScores.get(aId) - interestScores.get(bId)) +
+      PREFERENCE_SCORE_WEIGHT *
+        (preferenceScores.get(aId) - preferenceScores.get(bId)) +
+      TRANSIT_SCORE_WEIGHT * (transitScores.get(aId) - transitScores.get(bId))
     );
-  });
+  };
 
-  return combinedScores;
+  return options.sort(combinedScoresComparator);
 }
+
+module.exports = { recommend };
