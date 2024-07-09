@@ -177,8 +177,8 @@ export default function Search({ form, handleSearch }) {
                 label="Good for groups"
               />
               <Checkbox
-                key={form.key("preferAccessible")}
-                {...form.getInputProps("preferAccessible", {
+                key={form.key("isAccessible")}
+                {...form.getInputProps("isAccessible", {
                   type: "checkbox",
                 })}
                 label="Wheelchair accessible"

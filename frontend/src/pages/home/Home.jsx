@@ -95,7 +95,7 @@ export default function Home({ userId }) {
       budget: "1", // SegmentedControl component takes str vals
       goodForChildren: false,
       goodForGroups: false,
-      preferAccessible: false,
+      isAccessible: false,
     },
   });
 
