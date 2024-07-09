@@ -15,7 +15,7 @@ export default function Home({ userId }) {
   const { VITE_EXPRESS_API } = import.meta.env;
   const [profile, setProfile] = useState(null);
   const [options, setOptions] = useState([]);
-  const [route, setRoute] = useState(null);
+  const [activeOption, setActiveOption] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
 
   useEffect(() => {
@@ -127,14 +127,19 @@ export default function Home({ userId }) {
           <ScrollArea id="results-scrollarea">
             {options?.length > 0 &&
               options.map((option) => (
-                <SearchResult key={option.place.id} option={option} />
+                <SearchResult
+                  key={option.place.id}
+                  option={option}
+                  active={activeOption?.id === option.place.id}
+                  setActiveOption={setActiveOption}
+                />
               ))}
           </ScrollArea>
         </section>
         <Box id="map-area">
           <TransitMap
             id="google-map"
-            encodedPath={route?.polyline?.encodedPolyline}
+            encodedPath={activeOption?.route}
             setMapBounds={setMapBounds}
           />
         </Box>

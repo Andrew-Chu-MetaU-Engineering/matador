@@ -1,13 +1,28 @@
 import PropTypes from "prop-types";
 import { Card, Text, Rating, Group } from "@mantine/core";
+import { IconFlagFilled } from "@tabler/icons-react";
 import "./SearchResult.css";
 
-export default function SearchResult({ option }) {
-  const { place, extracted } = option;
+export default function SearchResult({ option, active, setActiveOption }) {
+  const { place, route, extracted } = option;
   const durationMinutes = Math.round(extracted.duration / 60); // extracted.duration is in seconds
   return (
-    <Card shadow="xs" padding="md" radius="md" mb="xs">
-      <Text size="lg">{place.displayName.text}</Text>
+    <Card
+      shadow="xs"
+      padding="md"
+      radius="md"
+      mb="xs"
+      onClick={() =>
+        setActiveOption({
+          id: place.id,
+          route: route?.polyline?.encodedPolyline,
+        })
+      }
+    >
+      <Group justify="space-between">
+        <Text size="lg">{place.displayName.text}</Text>
+        {active && <IconFlagFilled id="result-flag-icon" />}
+      </Group>
       <div id="place-properties">
         <Text size="md" c="dimmed" truncate="end">
           {durationMinutes >= 60 && (
@@ -37,4 +52,6 @@ export default function SearchResult({ option }) {
 
 SearchResult.propTypes = {
   option: PropTypes.object.isRequired,
+  active: PropTypes.bool.isRequired,
+  setActiveOption: PropTypes.func.isRequired,
 };

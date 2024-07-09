@@ -1,5 +1,4 @@
-
-#place-properties{
+#place-properties {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -10,4 +9,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+}
+
+#result-flag-icon {
+  color: red;
 }
