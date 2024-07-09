@@ -31,17 +31,4 @@ router.get("/computeRouteMatrix", async (req, res) => {
   }
 });
 
-router.get("/nearbyPlaces", async (req, res) => {
-  try {
-    const data = await utils.fetchPlaces(
-      req.query.searchQuery,
-      req.query.centerLatitude,
-      req.query.centerLongitude
-    );
-    res.status(200).send(data);
-  } catch (error) {
-    res.status(500);
-  }
-});
-
 module.exports = router;

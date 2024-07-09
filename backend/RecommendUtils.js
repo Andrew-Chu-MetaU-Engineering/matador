@@ -102,8 +102,7 @@ async function refetch(
       await fetchUtils.getOptions(
         query,
         settings.originAddress,
-        settings.center.latitude,
-        settings.center.longitude,
+        settings.locationBias,
         numRecommendations - options.length,
         false,
         nextPageToken

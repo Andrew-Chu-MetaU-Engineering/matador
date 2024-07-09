@@ -94,8 +94,7 @@ async function recommend(query, interests, settings) {
     await fetchUtils.getOptions(
       query,
       settings.originAddress,
-      settings.center.latitude,
-      settings.center.longitude,
+      settings.locationBias,
       NUM_RECOMMENDATIONS,
       true
     );

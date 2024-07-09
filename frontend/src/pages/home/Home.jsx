@@ -72,9 +72,13 @@ export default function Home({ userId }) {
       isAccessible,
     } = values;
 
+    const { north, south, east, west } = mapBounds;
     const settings = {
       originAddress: originAddress,
-      center: {},
+      locationBias: {
+        low: { latitude: south, longitude: west },
+        high: { latitude: north, longitude: east },
+      },
       departureTime: isCurrentDepartureTime
         ? new Date(Date.now()).toISOString()
         : dayjs(departureTime).toISOString(),

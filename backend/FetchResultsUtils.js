@@ -81,8 +81,7 @@ async function fetchRouteMatrix(originAddress, destinationAddresses) {
 
 async function fetchPlaces(
   searchQuery,
-  centerLatitude,
-  centerLongitude,
+  locationBiasRect,
   numRequests,
   isFirstRequest,
   nextPageToken = null
@@ -106,12 +105,8 @@ async function fetchPlaces(
   const requestBody = {
     textQuery: searchQuery,
     locationBias: {
-      circle: {
-        center: {
-          latitude: centerLatitude,
-          longitude: centerLongitude,
-        },
-        radius: NEARBY_SEARCH_RADIUS_METERS,
+      rectangle: {
+        ...locationBiasRect
       },
     },
     pageSize: numRequests,
@@ -140,16 +135,14 @@ async function fetchPlaces(
 async function getOptions(
   searchQuery,
   originAddress,
-  centerLatitude,
-  centerLongitude,
+  locationBias,
   numRequests,
   isFirstRequest,
   nextPageToken = null
 ) {
   const { places, nextPageToken: newNextPageToken } = await fetchPlaces(
     searchQuery,
-    centerLatitude,
-    centerLongitude,
+    locationBias,
     numRequests,
     isFirstRequest,
     nextPageToken
