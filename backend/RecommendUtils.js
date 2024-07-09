@@ -120,7 +120,7 @@ async function refetch(
   }
 }
 
-async function fetchRoutePolylines(options, originAddress) {
+async function fetchRouteDetails(options, originAddress) {
   let routePromises = options.map((option) =>
     fetchUtils.fetchRoute(originAddress, option.place.formattedAddress)
   );
@@ -163,7 +163,7 @@ module.exports = {
   cosineSimilarity,
   feasibilityFilter,
   refetch,
-  fetchRoutePolylines,
+  fetchRouteDetails,
   getAlignedInterests,
   biasPreference,
   normalizeScores,
