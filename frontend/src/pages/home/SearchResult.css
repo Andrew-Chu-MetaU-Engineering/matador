@@ -1,0 +1,13 @@
+
+#place-properties{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+#price-and-rating-wrapper {
+  align-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
