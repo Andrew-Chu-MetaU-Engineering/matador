@@ -78,7 +78,6 @@ export default function Home({ userId }) {
 
   function handleSearch(values) {
     setSearch({ ...values });
-    // TODO implement UI interactions for search
   }
 
   const form = useForm({
@@ -90,6 +89,8 @@ export default function Home({ userId }) {
       strictFare: false,
       duration: null,
       strictDuration: false,
+      departureTime: null,
+      isCurrentDepartureTime: true,
       minRating: 0,
       budget: "1", // SegmentedControl component takes str vals
       goodForChildren: false,

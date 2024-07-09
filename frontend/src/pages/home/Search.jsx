@@ -13,6 +13,8 @@ import {
   Rating,
   SegmentedControl,
 } from "@mantine/core";
+import { DateTimePicker } from "@mantine/dates";
+import "@mantine/dates/styles.css";
 
 import {
   IconMapSearch,
@@ -24,6 +26,8 @@ import "./Search.css";
 
 export default function Search({ form, handleSearch }) {
   const [showFilters, setShowFilters] = useState(true);
+  const [useCurrentAsDepartureTime, setUseCurrentAsDepartureTime] =
+    useState(true);
 
   return (
     <Paper id="search-pane" shadow="xs" radius="md">
@@ -104,6 +108,27 @@ export default function Search({ form, handleSearch }) {
                 />
               </Group>
             </Box>
+            <DateTimePicker
+              key={form.key("departureTime")}
+              {...form.getInputProps("departureTime")}
+              valueFormat="MMM DD, YYYY hh:mm A"
+              disabled={useCurrentAsDepartureTime}
+              label="Departure time"
+              placeholder="Pick date and time"
+              mt="xs"
+            />
+            <Checkbox
+              key={form.key("isCurrentDepartureTime")}
+              {...form.getInputProps("isCurrentDepartureTime", {
+                type: "checkbox",
+              })}
+              onChange={(e) =>
+                setUseCurrentAsDepartureTime(e.currentTarget.checked)
+              }
+              size="xs"
+              label="Leave now"
+              mt="xs"
+            />
             <Divider mt="md" mb="xs" label="Preferences" labelPosition="left" />
             <Box id="preference-filters">
               <Box id="star-rating-wrapper">
