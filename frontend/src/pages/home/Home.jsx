@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Paper, Box } from "@mantine/core";
+import { Paper, Box, ScrollArea } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
 
@@ -124,12 +124,12 @@ export default function Home({ userId }) {
       <Paper id="home-body">
         <section id="search-panel">
           <Search form={form} handleSearch={handleSearch} />
-          <Box>
+          <ScrollArea id="results-scrollarea">
             {options?.length > 0 &&
               options.map((option) => (
                 <SearchResult key={option.place.id} option={option} />
               ))}
-          </Box>
+          </ScrollArea>
         </section>
         <Box id="map-area">
           <TransitMap
