@@ -22,21 +22,14 @@ app.use("/user", userRoute);
 
 app.get("/recommend", async (req, res) => {
   try {
-    const {
-      user: userId,
-      searchQuery,
-      originAddress,
-      centerLatitude,
-      centerLongitude,
-    } = req.query;
-    const options = await utils.getOptions(
-      searchQuery,
-      originAddress,
-      centerLatitude,
-      centerLongitude
-    );
+    const { userId, searchQuery, settings } = req.query;
     const profile = await getUser(userId);
-    res.status(200).send(utils.recommend(profile, options));
+    const options = await recommender.recommend(
+      searchQuery,
+      profile.interests,
+      JSON.parse(settings)
+    );
+    res.status(200).send(options);
   } catch (error) {
     res.status(500);
   }

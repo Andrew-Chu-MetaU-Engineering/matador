@@ -13,6 +13,8 @@ import {
   Rating,
   SegmentedControl,
 } from "@mantine/core";
+import { DateTimePicker } from "@mantine/dates";
+import "@mantine/dates/styles.css";
 
 import {
   IconMapSearch,
@@ -24,6 +26,8 @@ import "./Search.css";
 
 export default function Search({ form, handleSearch }) {
   const [showFilters, setShowFilters] = useState(true);
+  const [useCurrentAsDepartureTime, setUseCurrentAsDepartureTime] =
+    useState(true);
 
   return (
     <Paper id="search-pane" shadow="xs" radius="md">
@@ -76,7 +80,12 @@ export default function Search({ form, handleSearch }) {
                   allowDecimal={false}
                   thousandSeparator=","
                 />
-                <Checkbox size="xs" label="No higher fares" />
+                <Checkbox
+                  key={form.key("strictFare")}
+                  {...form.getInputProps("strictFare", { type: "checkbox" })}
+                  size="xs"
+                  label="No higher fares"
+                />
               </Group>
               <Group>
                 <NumberInput
@@ -89,9 +98,37 @@ export default function Search({ form, handleSearch }) {
                   allowDecimal={false}
                   thousandSeparator=","
                 />
-                <Checkbox size="xs" label="No longer durations" />
+                <Checkbox
+                  key={form.key("strictDuration")}
+                  {...form.getInputProps("strictDuration", {
+                    type: "checkbox",
+                  })}
+                  size="xs"
+                  label="No longer durations"
+                />
               </Group>
             </Box>
+            <DateTimePicker
+              key={form.key("departureTime")}
+              {...form.getInputProps("departureTime")}
+              valueFormat="MMM DD, YYYY hh:mm A"
+              disabled={useCurrentAsDepartureTime}
+              label="Departure time"
+              placeholder="Pick date and time"
+              mt="xs"
+            />
+            <Checkbox
+              key={form.key("isCurrentDepartureTime")}
+              {...form.getInputProps("isCurrentDepartureTime", {
+                type: "checkbox",
+              })}
+              onChange={(e) =>
+                setUseCurrentAsDepartureTime(e.currentTarget.checked)
+              }
+              size="xs"
+              label="Leave now"
+              mt="xs"
+            />
             <Divider mt="md" mb="xs" label="Preferences" labelPosition="left" />
             <Box id="preference-filters">
               <Box id="star-rating-wrapper">
@@ -99,7 +136,12 @@ export default function Search({ form, handleSearch }) {
                   Minimum rating
                 </Text>
                 <Box id="star-rating-spacer">
-                  <Rating fractions={2} size="md" />
+                  <Rating
+                    key={form.key("minRating")}
+                    {...form.getInputProps("minRating")}
+                    fractions={2}
+                    size="md"
+                  />
                 </Box>
               </Box>
               <Box id="budget-wrapper">
@@ -107,6 +149,8 @@ export default function Search({ form, handleSearch }) {
                   Budget
                 </Text>
                 <SegmentedControl
+                  key={form.key("budget")}
+                  {...form.getInputProps("budget", { type: "checkbox" })}
                   size="xs"
                   data={[
                     { label: "$", value: "1" },
@@ -118,9 +162,27 @@ export default function Search({ form, handleSearch }) {
               </Box>
             </Box>
             <Box id="misc-preferences">
-              <Checkbox label="Good for children" />
-              <Checkbox label="Good for groups" />
-              <Checkbox label="Wheelchair accessible" />
+              <Checkbox
+                key={form.key("goodForChildren")}
+                {...form.getInputProps("goodForChildren", {
+                  type: "checkbox",
+                })}
+                label="Good for children"
+              />
+              <Checkbox
+                key={form.key("goodForGroups")}
+                {...form.getInputProps("goodForGroups", {
+                  type: "checkbox",
+                })}
+                label="Good for groups"
+              />
+              <Checkbox
+                key={form.key("isAccessible")}
+                {...form.getInputProps("isAccessible", {
+                  type: "checkbox",
+                })}
+                label="Wheelchair accessible"
+              />
             </Box>
           </Box>
         )}
