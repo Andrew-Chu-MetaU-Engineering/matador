@@ -16,6 +16,7 @@ import {
   Button,
 } from "@mantine/core";
 import { auth } from "./firebase-config";
+import "./Authentication.css";
 
 export default function Authentication() {
   const navigate = useNavigate();
@@ -51,11 +52,11 @@ export default function Authentication() {
   }
 
   return (
-    <div>
+    <Paper id="authentication-body">
       <Container size={420} my={40}>
         <Title ta="center">Welcome to Matador!</Title>
 
-        <Paper withBorder shadow="md" p={30} mt={30} radius="md">
+        <Paper id="auth-form" withBorder shadow="md" radius="md">
           <TextInput
             value={email}
             onChange={(event) => {
@@ -94,6 +95,6 @@ export default function Authentication() {
         </Paper>
       </Container>
       <button onClick={logout}> Sign Out </button>
-    </div>
+    </Paper>
   );
 }
