@@ -1,10 +1,18 @@
 #search-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   flex: 15%;
   background-color: aliceblue;
 }
 
 #search-panel > * {
-  margin: 1rem;
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+#results-scrollarea {
+  flex-grow: 1;
 }
 
 #map-area {

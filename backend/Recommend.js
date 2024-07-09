@@ -110,6 +110,8 @@ async function recommend(query, interests, settings) {
     query
   );
 
+  await recommendUtils.fetchRouteDetails(options, settings.originAddress);
+
   // TODO generate interest, preference, and transit vector for each option in one iteration
   const interestScores = await calculateInterestScores(
     query,

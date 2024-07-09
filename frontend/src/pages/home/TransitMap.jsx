@@ -20,7 +20,7 @@ export default function TransitMap({ encodedPath, setMapBounds }) {
         {encodedPath && (
           <Polyline
             strokeWeight={8}
-            strokeColor={"#000000"}
+            strokeColor={"#ff0000"}
             encodedPath={encodedPath}
           />
         )}

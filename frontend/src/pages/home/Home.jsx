@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Paper, Box } from "@mantine/core";
+import { Paper, Box, ScrollArea } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
 
@@ -15,7 +15,7 @@ export default function Home({ userId }) {
   const { VITE_EXPRESS_API } = import.meta.env;
   const [profile, setProfile] = useState(null);
   const [options, setOptions] = useState([]);
-  const [route, setRoute] = useState(null);
+  const [activeOption, setActiveOption] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
 
   useEffect(() => {
@@ -56,6 +56,9 @@ export default function Home({ userId }) {
   }
 
   async function handleSearch(values) {
+    setOptions(null);
+    setActiveOption(null);
+
     const {
       query,
       originAddress,
@@ -124,17 +127,22 @@ export default function Home({ userId }) {
       <Paper id="home-body">
         <section id="search-panel">
           <Search form={form} handleSearch={handleSearch} />
-          <Box>
+          <ScrollArea id="results-scrollarea">
             {options?.length > 0 &&
               options.map((option) => (
-                <SearchResult key={option.place.id} option={option} />
+                <SearchResult
+                  key={option.place.id}
+                  option={option}
+                  active={activeOption?.id === option.place.id}
+                  setActiveOption={setActiveOption}
+                />
               ))}
-          </Box>
+          </ScrollArea>
         </section>
         <Box id="map-area">
           <TransitMap
             id="google-map"
-            encodedPath={route?.polyline?.encodedPolyline}
+            encodedPath={activeOption?.route}
             setMapBounds={setMapBounds}
           />
         </Box>
