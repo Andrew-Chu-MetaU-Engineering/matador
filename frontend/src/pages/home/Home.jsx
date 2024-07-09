@@ -87,7 +87,14 @@ export default function Home({ userId }) {
       query: "",
       originAddress: "",
       fare: null, // null to display no value
+      strictFare: false,
       duration: null,
+      strictDuration: false,
+      minRating: 0,
+      budget: "1", // SegmentedControl component takes str vals
+      goodForChildren: false,
+      goodForGroups: false,
+      preferAccessible: false,
     },
   });
 
