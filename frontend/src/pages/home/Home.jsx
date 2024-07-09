@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Paper, Box } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import dayjs from "dayjs";
 
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -11,18 +12,8 @@ import SearchResult from "./SearchResult";
 import "./Home.css";
 
 export default function Home({ userId }) {
-  const {
-    VITE_EXPRESS_API,
-    VITE_ORIGIN_ADDRESS,
-    VITE_DEFAULT_VIEW_LAT,
-    VITE_DEFAULT_VIEW_LNG,
-  } = import.meta.env;
+  const { VITE_EXPRESS_API } = import.meta.env;
   const [profile, setProfile] = useState(null);
-  const [search, setSearch] = useState({
-    query: "",
-    fare: 0,
-    duration: 0,
-  });
   const [options, setOptions] = useState([]);
   const [route, setRoute] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
@@ -46,23 +37,12 @@ export default function Home({ userId }) {
     }
   }
 
-  useEffect(() => {
-    const { query } = search;
-    if (!query) return;
-    fetchRecommendations(query, {
-      latitude: VITE_DEFAULT_VIEW_LAT,
-      longitude: VITE_DEFAULT_VIEW_LNG,
-    });
-  }, [search]);
-
-  async function fetchRecommendations(searchQuery, center) {
+  async function fetchRecommendations(query, settings) {
     try {
       let url = new URL("recommend", VITE_EXPRESS_API);
-      url.searchParams.append("user", profile.id);
-      url.searchParams.append("originAddress", VITE_ORIGIN_ADDRESS);
-      url.searchParams.append("searchQuery", searchQuery);
-      url.searchParams.append("centerLatitude", center.latitude);
-      url.searchParams.append("centerLongitude", center.longitude);
+      url.searchParams.append("userId", profile.id);
+      url.searchParams.append("searchQuery", query);
+      url.searchParams.append("settings", JSON.stringify(settings));
 
       const response = await fetch(url);
       if (!response.ok) {
@@ -70,14 +50,49 @@ export default function Home({ userId }) {
       }
       const recommendations = await response.json();
       setOptions(recommendations);
-      setRoute(recommendations[0].route);
     } catch (error) {
       console.error("Error fetching recommendations:", error);
     }
   }
 
-  function handleSearch(values) {
-    setSearch({ ...values });
+  async function handleSearch(values) {
+    const {
+      query,
+      originAddress,
+      fare,
+      strictFare,
+      duration,
+      strictDuration,
+      departureTime,
+      isCurrentDepartureTime,
+      minRating,
+      budget,
+      goodForChildren,
+      goodForGroups,
+      isAccessible,
+    } = values;
+
+    const settings = {
+      originAddress: originAddress,
+      center: {},
+      departureTime: isCurrentDepartureTime
+        ? new Date(Date.now()).toISOString()
+        : dayjs(departureTime).toISOString(),
+      preferredFare: {
+        fare: fare,
+        isStrong: strictFare,
+      },
+      preferredDuration: {
+        duration: duration,
+        isStrong: strictDuration,
+      },
+      budget: budget,
+      minRating: minRating,
+      goodForChildren: goodForChildren,
+      goodForGroups: goodForGroups,
+      isAccessible: isAccessible,
+    };
+    await fetchRecommendations(query, settings);
   }
 
   const form = useForm({
