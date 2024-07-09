@@ -56,6 +56,9 @@ export default function Home({ userId }) {
   }
 
   async function handleSearch(values) {
+    setOptions(null);
+    setActiveOption(null);
+
     const {
       query,
       originAddress,
