@@ -21,16 +21,26 @@ import "./Authentication.css";
 export default function Authentication() {
   const navigate = useNavigate();
   const isLoginPage = useLocation().state?.isLogin;
+  const isLoggingOut = useLocation().state?.logout;
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   useEffect(() => {
+    if (isLoggingOut) {
+      const logout = async () => {
+        await signOut(auth);
+      };
+      logout();
+    }
+  }, []);
+
+  useEffect(() => {
     if (isLoginPage != null) {
       setIsLogin(isLoginPage);
     }
-  }, []);
+  }, [isLoginPage]);
 
   async function authenticate() {
     try {
@@ -45,10 +55,6 @@ export default function Authentication() {
     } catch (error) {
       console.log(error.message);
     }
-  }
-
-  async function logout() {
-    await signOut(auth);
   }
 
   return (
@@ -94,7 +100,6 @@ export default function Authentication() {
           </Group>
         </Paper>
       </Container>
-      <button onClick={logout}> Sign Out </button>
     </Paper>
   );
 }
