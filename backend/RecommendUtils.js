@@ -120,6 +120,14 @@ async function refetch(
   }
 }
 
+async function fetchRoutePolylines(options, originAddress) {
+  let routePromises = options.map((option) =>
+    fetchUtils.fetchRoute(originAddress, option.place.formattedAddress)
+  );
+  const routes = await Promise.all(routePromises);
+  options.forEach((option, i) => (option.route = routes[i].routes[0]));
+}
+
 async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   const NEAR_INTEREST_THRESHOLD = 0.1;
   let nearInterests = [];
@@ -155,6 +163,7 @@ module.exports = {
   cosineSimilarity,
   feasibilityFilter,
   refetch,
+  fetchRoutePolylines,
   getAlignedInterests,
   biasPreference,
   normalizeScores,

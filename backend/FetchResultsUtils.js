@@ -11,10 +11,8 @@ async function fetchRoute(originAddress, destinationAddress) {
   // computes route from origin to destination and their related transit fares and durations
   try {
     const FIELDS = [
-      "routes.duration",
       "routes.polyline",
-      "routes.travel_advisory.transitFare",
-      "routes.legs.stepsOverview",
+      "routes.legs",
       "routes.viewport",
     ];
 
