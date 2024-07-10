@@ -135,7 +135,7 @@ async function fetchRecommendations(numRecommendations, settings, query) {
     tries += 1;
   }
 
-  await fetchRouteDetails(
+  await insertRouteDetails(
     options,
     settings.originAddress,
     settings.departureTime
@@ -143,7 +143,7 @@ async function fetchRecommendations(numRecommendations, settings, query) {
   return options;
 }
 
-async function fetchRouteDetails(options, originAddress, departureTime) {
+async function insertRouteDetails(options, originAddress, departureTime) {
   let routePromises = options.map((option) =>
     fetchUtils.fetchRoute(
       originAddress,
