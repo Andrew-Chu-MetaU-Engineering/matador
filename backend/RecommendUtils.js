@@ -60,7 +60,7 @@ function openOnArrival(
     // check if >=1 day of the week has missing hours data
     return true;
   }
-  let arrivalTime = new Date(new Date(departureTime));
+  let arrivalTime = new Date(departureTime);
   arrivalTime.setSeconds(arrivalTime.getSeconds() + transitDuration);
 
   let { open, close } = openingHours.periods[arrivalTime.getDay()];
