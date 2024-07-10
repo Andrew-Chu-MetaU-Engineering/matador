@@ -105,7 +105,7 @@ async function fetchPlaces(
     textQuery: searchQuery,
     locationBias: {
       rectangle: {
-        ...locationBiasRect
+        ...locationBiasRect,
       },
     },
     pageSize: numRequests,
