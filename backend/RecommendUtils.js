@@ -49,7 +49,7 @@ function constructTimePoint(point, utcOffsetMinutes) {
   return time;
 }
 
-function openOnArrival(
+function isOpenOnArrival(
   departureTime,
   transitDuration,
   openingHours,
@@ -71,26 +71,25 @@ function openOnArrival(
   );
 }
 
-function feasibilityFilter(option, settings) {
+function isFeasible(option, settings) {
   const {
     place: { rating, currentOpeningHours, utcOffsetMinutes },
     extracted: { fare, duration, priceLevel },
   } = option;
   const { departureTime, preferredFare, preferredDuration, budget, minRating } =
     settings;
-  const isFeasible = !(
+  return !(
     (preferredFare.isStrong && fare > preferredFare.fare) ||
     (preferredDuration.isStrong && duration > preferredDuration.duration) ||
     priceLevel > budget ||
     rating < minRating ||
-    !openOnArrival(
+    !isOpenOnArrival(
       departureTime,
       duration,
       currentOpeningHours,
       utcOffsetMinutes
     )
   );
-  return isFeasible;
 }
 
 async function fetchRecommendations(numRecommendations, settings, query) {
@@ -115,9 +114,7 @@ async function fetchRecommendations(numRecommendations, settings, query) {
       break;
     } else {
       options.push(
-        ...fetchedOptions.filter((option) =>
-          feasibilityFilter(option, settings)
-        )
+        ...fetchedOptions.filter((option) => isFeasible(option, settings))
       );
       nextPageToken = refetchNextPageToken;
     }
