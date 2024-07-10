@@ -24,20 +24,24 @@ async function calculateInterestScores(query, interests, options) {
     [query, ...alignedInterests].join()
   );
 
-  const interestScores = new Map();
-  for (const option of options) {
-    const { id, displayName, editorialSummary, types } = option.place;
-    const descriptionEmbedding = await getEmbedding(
+  const descriptionEmbeddingPromises = options.map((option) => {
+    const { displayName, editorialSummary, types } = option.place;
+    return getEmbedding(
       [displayName.text, editorialSummary?.text, ...types].join(", ")
     );
-    interestScores.set(
-      id,
+  });
+  const descriptionEmbeddings = await Promise.all(descriptionEmbeddingPromises);
+
+  const interestScores = new Map(
+    options.map((option, i) => [
+      option.place.id,
       recommendUtils.cosineSimilarity(
         adjustedQueryEmbedding,
-        descriptionEmbedding
-      )
-    );
-  }
+        descriptionEmbeddings[i]
+      ),
+    ])
+  );
+
   return recommendUtils.normalizeScores(interestScores);
 }
 
