@@ -4,7 +4,6 @@ const {
   COMPUTE_ROUTES_ENDPOINT,
   COMPUTE_ROUTEMATRIX_ENDPOINT,
   TEXTSEARCH_PLACES_ENDPOINT,
-  NEARBY_SEARCH_RADIUS_METERS,
 } = process.env;
 
 async function fetchRoute(originAddress, destinationAddress, departureTime) {
