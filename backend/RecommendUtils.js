@@ -1,5 +1,5 @@
 const fetchUtils = require("./FetchResultsUtils");
-const { MAX_REFETCH_TRIES, BIAS } = process.env;
+const { MAX_FETCH_TRIES, BIAS } = process.env;
 
 async function getTransformer() {
   TransformersApi = Function('return import("@xenova/transformers")')();
@@ -94,12 +94,12 @@ function feasibilityFilter(option, settings) {
 }
 
 async function fetchRecommendations(numRecommendations, settings, query) {
-  let retries = 0;
+  let tries = 0;
   let nextPageToken = null;
   let isInitialFetch = true;
 
   let options = [];
-  while (options.length < numRecommendations && retries < MAX_REFETCH_TRIES) {
+  while (options.length < numRecommendations && tries < MAX_FETCH_TRIES) {
     let { options: fetchedOptions, nextPageToken: refetchNextPageToken } =
       await fetchUtils.getOptions(
         query,
@@ -121,8 +121,8 @@ async function fetchRecommendations(numRecommendations, settings, query) {
       nextPageToken = refetchNextPageToken;
     }
     if (isInitialFetch) isInitialFetch = false;
-    retries += 1;
-  }  
+    tries += 1;
+  }
 
   await fetchRouteDetails(options, settings.originAddress);
   return options;
