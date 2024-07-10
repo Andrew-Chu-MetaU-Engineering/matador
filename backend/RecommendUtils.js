@@ -105,6 +105,7 @@ async function fetchRecommendations(numRecommendations, settings, query) {
         query,
         settings.originAddress,
         settings.locationBias,
+        settings.departureTime,
         numRecommendations - options.length,
         isInitialFetch,
         nextPageToken
@@ -124,13 +125,21 @@ async function fetchRecommendations(numRecommendations, settings, query) {
     tries += 1;
   }
 
-  await fetchRouteDetails(options, settings.originAddress);
+  await fetchRouteDetails(
+    options,
+    settings.originAddress,
+    settings.departureTime
+  );
   return options;
 }
 
-async function fetchRouteDetails(options, originAddress) {
+async function fetchRouteDetails(options, originAddress, departureTime) {
   let routePromises = options.map((option) =>
-    fetchUtils.fetchRoute(originAddress, option.place.formattedAddress)
+    fetchUtils.fetchRoute(
+      originAddress,
+      option.place.formattedAddress,
+      departureTime
+    )
   );
   const routes = await Promise.all(routePromises);
   options.forEach((option, i) => (option.route = routes[i].routes[0]));

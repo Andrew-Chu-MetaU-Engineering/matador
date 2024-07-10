@@ -7,14 +7,10 @@ const {
   NEARBY_SEARCH_RADIUS_METERS,
 } = process.env;
 
-async function fetchRoute(originAddress, destinationAddress) {
+async function fetchRoute(originAddress, destinationAddress, departureTime) {
   // computes route from origin to destination and their related transit fares and durations
   try {
-    const FIELDS = [
-      "routes.polyline",
-      "routes.legs",
-      "routes.viewport",
-    ];
+    const FIELDS = ["routes.polyline", "routes.legs", "routes.viewport"];
 
     const response = await fetch(new URL(COMPUTE_ROUTES_ENDPOINT), {
       method: "POST",
@@ -32,6 +28,7 @@ async function fetchRoute(originAddress, destinationAddress) {
         },
         travelMode: "TRANSIT",
         computeAlternativeRoutes: false,
+        departureTime: departureTime,
       }),
     });
     return await response.json();
@@ -40,7 +37,11 @@ async function fetchRoute(originAddress, destinationAddress) {
   }
 }
 
-async function fetchRouteMatrix(originAddress, destinationAddresses) {
+async function fetchRouteMatrix(
+  originAddress,
+  destinationAddresses,
+  departureTime
+) {
   // computes route from origin to destination and their related transit fares and durations
   try {
     const FIELDS = ["duration", "travel_advisory.transitFare", "condition"];
@@ -52,6 +53,7 @@ async function fetchRouteMatrix(originAddress, destinationAddresses) {
         },
       },
       travelMode: "TRANSIT",
+      departureTime: departureTime,
     };
 
     requestBody.destinations = Object.values(
@@ -134,6 +136,7 @@ async function getOptions(
   searchQuery,
   originAddress,
   locationBias,
+  departureTime,
   numRequests,
   isFirstRequest,
   nextPageToken = null
@@ -148,7 +151,8 @@ async function getOptions(
 
   const routesData = await fetchRouteMatrix(
     originAddress,
-    places.map((place) => place.formattedAddress)
+    places.map((place) => place.formattedAddress),
+    departureTime
   );
 
   let options = [];
