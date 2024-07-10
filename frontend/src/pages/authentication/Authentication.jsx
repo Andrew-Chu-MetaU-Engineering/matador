@@ -16,20 +16,31 @@ import {
   Button,
 } from "@mantine/core";
 import { auth } from "./firebase-config";
+import "./Authentication.css";
 
 export default function Authentication() {
   const navigate = useNavigate();
   const isLoginPage = useLocation().state?.isLogin;
+  const isLoggingOut = useLocation().state?.logout;
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   useEffect(() => {
+    if (isLoggingOut) {
+      const logout = async () => {
+        await signOut(auth);
+      };
+      logout();
+    }
+  }, []);
+
+  useEffect(() => {
     if (isLoginPage != null) {
       setIsLogin(isLoginPage);
     }
-  }, []);
+  }, [isLoginPage]);
 
   async function authenticate() {
     try {
@@ -46,16 +57,12 @@ export default function Authentication() {
     }
   }
 
-  async function logout() {
-    await signOut(auth);
-  }
-
   return (
-    <div>
+    <Paper id="authentication-body">
       <Container size={420} my={40}>
         <Title ta="center">Welcome to Matador!</Title>
 
-        <Paper withBorder shadow="md" p={30} mt={30} radius="md">
+        <Paper id="auth-form" withBorder shadow="md" radius="md">
           <TextInput
             value={email}
             onChange={(event) => {
@@ -93,7 +100,6 @@ export default function Authentication() {
           </Group>
         </Paper>
       </Container>
-      <button onClick={logout}> Sign Out </button>
-    </div>
+    </Paper>
   );
 }

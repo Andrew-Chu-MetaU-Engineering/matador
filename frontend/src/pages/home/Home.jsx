@@ -4,8 +4,6 @@ import { Paper, Box, ScrollArea } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
 
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 import TransitMap from "./TransitMap";
 import Search from "./Search";
 import SearchResult from "./SearchResult";
@@ -123,7 +121,6 @@ export default function Home({ userId }) {
 
   return (
     <>
-      <Header />
       <Paper id="home-body">
         <section id="search-panel">
           <Search form={form} handleSearch={handleSearch} />
@@ -147,7 +144,6 @@ export default function Home({ userId }) {
           />
         </Box>
       </Paper>
-      <Footer />
     </>
   );
 }
