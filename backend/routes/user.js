@@ -45,15 +45,25 @@ router.delete("/:id", async (req, res) => {
   res.status(204).json(deletedUser);
 });
 
-router.put("/:id/interest", async (req, res) => {
+router.get("/:id/interests", async (req, res) => {
+  const interests = await prisma.user.findUnique({
+    where: {
+      id: req.params.id,
+    },
+    select: {
+      interests: true,
+    },
+  });
+  res.status(200).json(interests);
+});
+
+router.put("/:id/interests", async (req, res) => {
   const user = await prisma.user.update({
     where: {
       id: req.params.id,
     },
     data: {
-      interests: {
-        push: req.body.interest,
-      },
+      interests: req.body.interests,
     },
   });
   res.status(204).json(user);
