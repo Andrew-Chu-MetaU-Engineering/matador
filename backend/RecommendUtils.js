@@ -1,5 +1,5 @@
 const fetchUtils = require("./FetchResultsUtils");
-const { MAX_REFETCH_TRIES, BIAS } = process.env;
+const { MAX_FETCH_TRIES, BIAS } = process.env;
 
 async function getTransformer() {
   TransformersApi = Function('return import("@xenova/transformers")')();
@@ -93,36 +93,39 @@ function feasibilityFilter(option, settings) {
   return isFeasible;
 }
 
-async function refetch(
-  options,
-  nextPageToken,
-  numRecommendations,
-  settings,
-  query
-) {
-  let retries = 0;
-  while (options.length < numRecommendations && retries < MAX_REFETCH_TRIES) {
-    retries += 1;
-    let { options: nextOptions, nextPageToken: refetchNextPageToken } =
+async function fetchRecommendations(numRecommendations, settings, query) {
+  let tries = 0;
+  let nextPageToken = null;
+  let isInitialFetch = true;
+
+  let options = [];
+  while (options.length < numRecommendations && tries < MAX_FETCH_TRIES) {
+    let { options: fetchedOptions, nextPageToken: refetchNextPageToken } =
       await fetchUtils.getOptions(
         query,
         settings.originAddress,
         settings.locationBias,
         numRecommendations - options.length,
-        false,
+        isInitialFetch,
         nextPageToken
       );
 
-    if (nextOptions == null) {
+    if (fetchedOptions.length === 0) {
       break;
     } else {
-      nextOptions = nextOptions.filter((option) =>
-        feasibilityFilter(option, settings)
+      options.push(
+        ...fetchedOptions.filter((option) =>
+          feasibilityFilter(option, settings)
+        )
       );
-      options.push(...nextOptions);
       nextPageToken = refetchNextPageToken;
     }
+    if (isInitialFetch) isInitialFetch = false;
+    tries += 1;
   }
+
+  await fetchRouteDetails(options, settings.originAddress);
+  return options;
 }
 
 async function fetchRouteDetails(options, originAddress) {
@@ -135,16 +138,15 @@ async function fetchRouteDetails(options, originAddress) {
 
 async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   const NEAR_INTEREST_THRESHOLD = 0.1;
-  let nearInterests = [];
-  for (const interest of interests) {
-    if (
-      cosineSimilarity(queryEmbedding, await getEmbedding(interest)) >=
+  const interestEmbeddingPromises = interests.map((interest) =>
+    getEmbedding(interest)
+  );
+  const interestEmbeddings = await Promise.all(interestEmbeddingPromises);
+  return interests.filter(
+    (interest, i) =>
+      cosineSimilarity(queryEmbedding, interestEmbeddings[i]) >=
       NEAR_INTEREST_THRESHOLD
-    ) {
-      nearInterests.push(interest);
-    }
-  }
-  return nearInterests;
+  );
 }
 
 function biasPreference(value, isDownward) {
@@ -166,9 +168,7 @@ module.exports = {
   getTransformer,
   getEmbedder,
   cosineSimilarity,
-  feasibilityFilter,
-  refetch,
-  fetchRouteDetails,
+  fetchRecommendations,
   getAlignedInterests,
   biasPreference,
   normalizeScores,
