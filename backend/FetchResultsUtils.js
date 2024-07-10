@@ -154,10 +154,9 @@ async function getOptions(
     departureTime
   );
 
-  let options = [];
-  for (const [i, place] of places.entries()) {
+  const options = places.map((place, i) => {
     const route = routesData[i];
-    let placeRoutes = {
+    return {
       place: place,
       extracted: {
         priceLevel: parsePriceLevel(place),
@@ -166,8 +165,8 @@ async function getOptions(
         duration: parseDuration(route),
       },
     };
-    options.push(placeRoutes);
-  }
+  });
+
   return { options: options, nextPageToken: newNextPageToken };
 }
 
