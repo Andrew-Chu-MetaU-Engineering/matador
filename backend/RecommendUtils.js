@@ -40,6 +40,19 @@ function cosineSimilarity(vecA, vecB) {
   );
 }
 
+async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
+  const NEAR_INTEREST_THRESHOLD = 0.1;
+  const interestEmbeddingPromises = interests.map((interest) =>
+    getEmbedding(interest)
+  );
+  const interestEmbeddings = await Promise.all(interestEmbeddingPromises);
+  return interests.filter(
+    (interest, i) =>
+      cosineSimilarity(queryEmbedding, interestEmbeddings[i]) >=
+      NEAR_INTEREST_THRESHOLD
+  );
+}
+
 function constructTimePoint(point, utcOffsetMinutes) {
   const { hour, minute, date } = point;
   let time = new Date(
@@ -142,19 +155,6 @@ async function fetchRouteDetails(options, originAddress, departureTime) {
   options.forEach((option, i) => (option.route = routes[i].routes[0]));
 }
 
-async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
-  const NEAR_INTEREST_THRESHOLD = 0.1;
-  const interestEmbeddingPromises = interests.map((interest) =>
-    getEmbedding(interest)
-  );
-  const interestEmbeddings = await Promise.all(interestEmbeddingPromises);
-  return interests.filter(
-    (interest, i) =>
-      cosineSimilarity(queryEmbedding, interestEmbeddings[i]) >=
-      NEAR_INTEREST_THRESHOLD
-  );
-}
-
 function biasPreference(value, isDownward) {
   // takes input values in [0, 1]
   return isDownward ? value ** (1 / BIAS) : value ** BIAS;
@@ -174,8 +174,8 @@ module.exports = {
   getTransformer,
   getEmbedder,
   cosineSimilarity,
-  fetchRecommendations,
   getAlignedInterests,
+  fetchRecommendations,
   biasPreference,
   normalizeScores,
 };
