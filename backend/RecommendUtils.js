@@ -135,16 +135,15 @@ async function fetchRouteDetails(options, originAddress) {
 
 async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   const NEAR_INTEREST_THRESHOLD = 0.1;
-  let nearInterests = [];
-  for (const interest of interests) {
-    if (
-      cosineSimilarity(queryEmbedding, await getEmbedding(interest)) >=
+  const interestEmbeddingPromises = interests.map((interest) =>
+    getEmbedding(interest)
+  );
+  const interestEmbeddings = await Promise.all(interestEmbeddingPromises);
+  return interests.filter(
+    (interest, i) =>
+      cosineSimilarity(queryEmbedding, interestEmbeddings[i]) >=
       NEAR_INTEREST_THRESHOLD
-    ) {
-      nearInterests.push(interest);
-    }
-  }
-  return nearInterests;
+  );
 }
 
 function biasPreference(value, isDownward) {
