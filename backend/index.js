@@ -3,7 +3,6 @@ const cors = require("cors");
 const recommender = require("./Recommend");
 require("dotenv").config();
 
-const googleApiRoute = require("./routes/googleAPI");
 const { router: userRoute, getUser } = require("./routes/user");
 
 const app = express();
@@ -17,7 +16,6 @@ app.get("/", (req, res, next) => {
   next();
 });
 
-app.use("/google", googleApiRoute);
 app.use("/user", userRoute);
 
 app.get("/recommend", async (req, res) => {
