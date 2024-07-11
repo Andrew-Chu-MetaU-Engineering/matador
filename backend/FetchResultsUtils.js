@@ -37,31 +37,51 @@ async function fetchRoute(originAddress, destinationAddress, departureTime) {
 }
 
 async function fetchRouteMatrix(
-  originAddress,
-  destinationAddresses,
-  departureTime
+  origin,
+  destinations,
+  departureTime,
+  useCoordinates = false
 ) {
   // computes route from origin to destination and their related transit fares and durations
   try {
     const FIELDS = ["duration", "travel_advisory.transitFare", "condition"];
 
     const requestBody = {
-      origins: {
-        waypoint: {
-          address: originAddress,
-        },
-      },
       travelMode: "TRANSIT",
-      departureTime: departureTime,
     };
+    if (departureTime) requestBody.departureTime = departureTime;
 
-    requestBody.destinations = Object.values(
-      destinationAddresses.map((address) => ({
+    if (useCoordinates) {
+      requestBody.origins = {
         waypoint: {
-          address: address,
+          location: {
+            latLng: { latitude: origin[0], longitude: origin[1] },
+          },
         },
-      }))
-    );
+      };
+      requestBody.destinations = Object.values(
+        destinations.map((coordinate) => ({
+          waypoint: {
+            location: {
+              latLng: { latitude: coordinate[0], longitude: coordinate[1] },
+            },
+          },
+        }))
+      );
+    } else {
+      requestBody.origins = {
+        waypoint: {
+          address: origin,
+        },
+      };
+      requestBody.destinations = Object.values(
+        destinations.map((address) => ({
+          waypoint: {
+            address: address,
+          },
+        }))
+      );
+    }
 
     const response = await fetch(new URL(COMPUTE_ROUTEMATRIX_ENDPOINT), {
       method: "POST",
@@ -215,4 +235,6 @@ module.exports = {
   fetchRouteMatrix,
   fetchPlaces,
   getOptions,
+  parseDuration,
+  calculateFare,
 };
