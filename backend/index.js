@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const recommender = require("./Recommend");
+const isograph = require("./Isograph");
 require("dotenv").config();
 
 const { router: userRoute, getUser } = require("./routes/user");
@@ -28,6 +29,21 @@ app.get("/recommend", async (req, res) => {
       JSON.parse(settings)
     );
     res.status(200).send(options);
+  } catch (error) {
+    res.status(500);
+  }
+});
+
+app.get("/isograph", async (req, res) => {
+  try {
+    const { origin, targetVal, costType, departureTime } = req.query;
+    const graph = await isograph.isograph(
+      origin.split(",").map(parseFloat),
+      parseFloat(targetVal),
+      costType,
+      departureTime
+    );
+    res.status(200).send(graph);
   } catch (error) {
     res.status(500);
   }
