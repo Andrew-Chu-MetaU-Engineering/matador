@@ -40,6 +40,19 @@ function cosineSimilarity(vecA, vecB) {
   );
 }
 
+async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
+  const NEAR_INTEREST_THRESHOLD = 0.1;
+  const interestEmbeddingPromises = interests.map((interest) =>
+    getEmbedding(interest)
+  );
+  const interestEmbeddings = await Promise.all(interestEmbeddingPromises);
+  return interests.filter(
+    (interest, i) =>
+      cosineSimilarity(queryEmbedding, interestEmbeddings[i]) >=
+      NEAR_INTEREST_THRESHOLD
+  );
+}
+
 function constructTimePoint(point, utcOffsetMinutes) {
   const { hour, minute, date } = point;
   let time = new Date(
@@ -49,7 +62,7 @@ function constructTimePoint(point, utcOffsetMinutes) {
   return time;
 }
 
-function openOnArrival(
+function isOpenOnArrival(
   departureTime,
   transitDuration,
   openingHours,
@@ -60,7 +73,7 @@ function openOnArrival(
     // check if >=1 day of the week has missing hours data
     return true;
   }
-  let arrivalTime = new Date(new Date(departureTime));
+  let arrivalTime = new Date(departureTime);
   arrivalTime.setSeconds(arrivalTime.getSeconds() + transitDuration);
 
   let { open, close } = openingHours.periods[arrivalTime.getDay()];
@@ -71,26 +84,25 @@ function openOnArrival(
   );
 }
 
-function feasibilityFilter(option, settings) {
+function isFeasible(option, settings) {
   const {
     place: { rating, currentOpeningHours, utcOffsetMinutes },
     extracted: { fare, duration, priceLevel },
   } = option;
   const { departureTime, preferredFare, preferredDuration, budget, minRating } =
     settings;
-  const isFeasible = !(
+  return !(
     (preferredFare.isStrong && fare > preferredFare.fare) ||
     (preferredDuration.isStrong && duration > preferredDuration.duration) ||
     priceLevel > budget ||
     rating < minRating ||
-    !openOnArrival(
+    !isOpenOnArrival(
       departureTime,
       duration,
       currentOpeningHours,
       utcOffsetMinutes
     )
   );
-  return isFeasible;
 }
 
 async function fetchRecommendations(numRecommendations, settings, query) {
@@ -115,9 +127,7 @@ async function fetchRecommendations(numRecommendations, settings, query) {
       break;
     } else {
       options.push(
-        ...fetchedOptions.filter((option) =>
-          feasibilityFilter(option, settings)
-        )
+        ...fetchedOptions.filter((option) => isFeasible(option, settings))
       );
       nextPageToken = refetchNextPageToken;
     }
@@ -125,7 +135,7 @@ async function fetchRecommendations(numRecommendations, settings, query) {
     tries += 1;
   }
 
-  await fetchRouteDetails(
+  await insertRouteDetails(
     options,
     settings.originAddress,
     settings.departureTime
@@ -133,7 +143,7 @@ async function fetchRecommendations(numRecommendations, settings, query) {
   return options;
 }
 
-async function fetchRouteDetails(options, originAddress, departureTime) {
+async function insertRouteDetails(options, originAddress, departureTime) {
   let routePromises = options.map((option) =>
     fetchUtils.fetchRoute(
       originAddress,
@@ -143,19 +153,6 @@ async function fetchRouteDetails(options, originAddress, departureTime) {
   );
   const routes = await Promise.all(routePromises);
   options.forEach((option, i) => (option.route = routes[i].routes[0]));
-}
-
-async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
-  const NEAR_INTEREST_THRESHOLD = 0.1;
-  const interestEmbeddingPromises = interests.map((interest) =>
-    getEmbedding(interest)
-  );
-  const interestEmbeddings = await Promise.all(interestEmbeddingPromises);
-  return interests.filter(
-    (interest, i) =>
-      cosineSimilarity(queryEmbedding, interestEmbeddings[i]) >=
-      NEAR_INTEREST_THRESHOLD
-  );
 }
 
 function biasPreference(value, isDownward) {
@@ -177,8 +174,8 @@ module.exports = {
   getTransformer,
   getEmbedder,
   cosineSimilarity,
-  fetchRecommendations,
   getAlignedInterests,
+  fetchRecommendations,
   biasPreference,
   normalizeScores,
 };

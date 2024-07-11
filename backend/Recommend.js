@@ -1,4 +1,3 @@
-const fetchUtils = require("./FetchResultsUtils");
 const recommendUtils = require("./RecommendUtils");
 const {
   NUM_RECOMMENDATIONS,
