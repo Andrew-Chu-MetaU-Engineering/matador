@@ -15,10 +15,15 @@ export default function Home({ userId }) {
   const [options, setOptions] = useState([]);
   const [activeOption, setActiveOption] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
+  const [isograph, setIsograph] = useState([]);
 
   useEffect(() => {
     if (userId != null) fetchProfile(userId);
   }, [userId]);
+
+  useEffect(() => {
+    fetchIsograph();
+  }, []);
 
   async function fetchProfile(userId) {
     try {
@@ -30,6 +35,31 @@ export default function Home({ userId }) {
       }
       let profile = await response.json();
       setProfile(profile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  }
+
+  async function fetchIsograph() {
+    // TODO to be changed to user inputs
+    const ORIGIN = [37.48, -122.16];
+    const TARGET_VAL = 10 * 60;
+    const COST_TYPE = "duration";
+    const DEPARTURE_TIME = new Date(Date.now()).toISOString();
+
+    try {
+      let url = new URL("isograph", VITE_EXPRESS_API);
+      url.searchParams.append("origin", ORIGIN);
+      url.searchParams.append("targetVal", TARGET_VAL);
+      url.searchParams.append("costType", COST_TYPE);
+      url.searchParams.append("departureTime", DEPARTURE_TIME);
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error. Status ${response.status}`);
+      }
+      setIsograph(await response.json());
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
@@ -140,6 +170,7 @@ export default function Home({ userId }) {
           <TransitMap
             id="google-map"
             encodedPath={activeOption?.route}
+            isograph={isograph}
             setMapBounds={setMapBounds}
           />
         </Box>
