@@ -1,16 +1,19 @@
 const fetchResultsUtils = require("./FetchResultsUtils");
+const { COST_TYPE_DURATION, COST_TYPE_FARE, COST_TYPE_ERROR_MSG } = process.env;
 
 function findCoordinate(origin, distance, direction) {
   const EARTH_RADIUS = 6371000; // meters
+  const METERS_PER_DEGREE = EARTH_RADIUS * (Math.PI / 180);
 
   const deltaMetersNorth = Math.abs(distance) * Math.cos(toRadians(direction));
   const deltaMetersEast = Math.abs(distance) * Math.sin(toRadians(direction));
 
   const [latitude, longitude] = origin;
   return [
-    latitude + (deltaMetersNorth / EARTH_RADIUS) * (180 / Math.PI),
+    latitude + deltaMetersNorth / METERS_PER_DEGREE,
     longitude +
-      ((deltaMetersEast / EARTH_RADIUS) * (180 / Math.PI)) /
+      deltaMetersEast /
+        METERS_PER_DEGREE /
         Math.cos((latitude * Math.PI) / 180),
   ];
 }
@@ -28,12 +31,12 @@ async function fetchCosts(origin, samplePoints, costType, departureTime) {
       true
     );
 
-    if (costType === "duration") {
+    if (costType === COST_TYPE_DURATION) {
       parseCostFunction = fetchResultsUtils.parseDuration;
-    } else if (costType === "fare") {
+    } else if (costType === COST_TYPE_FARE) {
       parseCostFunction = fetchResultsUtils.calculateFare;
     } else {
-      console.error("Cost type not supported.");
+      console.error(COST_TYPE_ERROR_MSG);
     }
     return routesData.map((route) => parseCostFunction(route));
   } catch (error) {
