@@ -44,7 +44,12 @@ async function fetchRouteMatrix(
 ) {
   // computes route from origin to destination and their related transit fares and durations
   try {
-    const FIELDS = ["duration", "travel_advisory.transitFare", "condition"];
+    const FIELDS = [
+      "destinationIndex",
+      "duration",
+      "travel_advisory.transitFare",
+      "condition",
+    ];
 
     const requestBody = {
       travelMode: "TRANSIT",
@@ -92,7 +97,9 @@ async function fetchRouteMatrix(
       },
       body: JSON.stringify(requestBody),
     });
-    return await response.json();
+
+    const routeMatrix = await response.json();
+    return routeMatrix.sort((a, b) => a.destinationIndex - b.destinationIndex);
   } catch (error) {
     console.log(error.message);
   }
