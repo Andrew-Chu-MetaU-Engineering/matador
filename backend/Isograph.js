@@ -6,7 +6,8 @@ const DISTANCES = Array.from(
   { length: SAMPLES_PER_DIRECTION },
   (v, i) => STEP_SIZE * (i + 1)
 );
-const DURATION_INTERALS = [5, 10, 15, 20, 25].map((val) => val * 60);
+const DURATION_INTERALS = [5, 10, 15, 30, 60].map((val) => val * 60); // convert min to sec 
+const FARE_INTERVALS = [1, 2, 5, 10, 20]; // in dollars
 
 async function isograph(origin, costType, departureTime) {
   let sampleInfo = Array.from({ length: NUM_DIRECTIONS }, (v, i) => {
