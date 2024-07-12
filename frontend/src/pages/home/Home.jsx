@@ -42,15 +42,13 @@ export default function Home({ userId }) {
 
   async function fetchIsograph() {
     // TODO to be changed to user inputs
-    const ORIGIN = [37.48, -122.16];
-    const TARGET_VAL = 10 * 60;
+    const ORIGIN = [37.42, -122.10];
     const COST_TYPE = "duration";
     const DEPARTURE_TIME = new Date(Date.now()).toISOString();
 
     try {
       let url = new URL("isograph", VITE_EXPRESS_API);
       url.searchParams.append("origin", ORIGIN);
-      url.searchParams.append("targetVal", TARGET_VAL);
       url.searchParams.append("costType", COST_TYPE);
       url.searchParams.append("departureTime", DEPARTURE_TIME);
 
