@@ -6,6 +6,13 @@ const {
   TEXTSEARCH_PLACES_ENDPOINT,
 } = process.env;
 
+const PLACES_ACCESSIBILITY_FIELDS = [
+  "wheelchairAccessibleParking",
+  "wheelchairAccessibleEntrance",
+  "wheelchairAccessibleRestroom",
+  "wheelchairAccessibleSeating",
+];
+
 async function fetchRoute(originAddress, destinationAddress, departureTime) {
   // computes route from origin to destination and their related transit fares and durations
   try {
@@ -197,14 +204,14 @@ function parsePriceLevel(place) {
 }
 
 function parseAccessibility(place) {
-  const TOTAL_ACCESSIBILITY_FIELDS = 4; // fields defined in Google Places API
   if (place?.accessibilityOptions == null) {
     return 0;
   }
 
   return (
-    Object.values(place.accessibilityOptions).filter(Boolean).length /
-    TOTAL_ACCESSIBILITY_FIELDS
+    Object.entries(place.accessibilityOptions).filter(
+      ([k, v]) => PLACES_ACCESSIBILITY_FIELDS.includes(k) && v
+    ).length / PLACES_ACCESSIBILITY_FIELDS.length
   );
 }
 
