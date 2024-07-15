@@ -2,7 +2,7 @@ const isographUtils = require("./IsographUtils");
 const NUM_DIRECTIONS = 8; // number of radial directions to sample
 const STEP_SIZE = 500; // meters
 const SAMPLES_PER_DIRECTION = 2;
-const DISTANCES = Array.from(
+const SAMPLING_DISTANCES = Array.from(
   { length: SAMPLES_PER_DIRECTION },
   (v, i) => STEP_SIZE * (i + 1)
 );
@@ -10,10 +10,21 @@ const DURATION_INTERALS = [5, 10, 15, 30, 60].map((val) => val * 60); // convert
 const FARE_INTERVALS = [1, 2, 5, 10, 20]; // in dollars
 
 async function isograph(origin, costType, departureTime) {
+  const { COST_TYPE_DURATION, COST_TYPE_FARE } = process.env;
+  let costIntervals;
+  switch (costType) {
+    case COST_TYPE_DURATION:
+      costIntervals = DURATION_INTERALS;
+      break;
+    case COST_TYPE_FARE:
+      costIntervals = FARE_INTERVALS;
+      break;
+  }
+
   let sampleInfo = Array.from({ length: NUM_DIRECTIONS }, (v, i) => {
     const direction = (360 / NUM_DIRECTIONS) * i;
     return {
-      coordinates: DISTANCES.map((distance) =>
+      coordinates: SAMPLING_DISTANCES.map((distance) =>
         isographUtils.findCoordinate(origin, distance, direction)
       ),
       direction: direction, // degrees clockwise from north
@@ -41,8 +52,8 @@ async function isograph(origin, costType, departureTime) {
       isographUtils
         .predictCostDistances(
           directionalSamples.costs,
-          DISTANCES,
-          DURATION_INTERALS
+          SAMPLING_DISTANCES,
+          costIntervals
         )
         .map(([cost, predictedDistance]) => {
           const predictedLocation = isographUtils.findCoordinate(
