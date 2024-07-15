@@ -1,8 +1,9 @@
 import PropTypes from "prop-types";
-import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
+import { APIProvider, Map } from "@vis.gl/react-google-maps";
+import Isograph from "./Isograph";
 import { Polyline } from "./Polyline";
 
-export default function TransitMap({ encodedPath, isograph, setMapBounds }) {
+export default function TransitMap({ encodedPath, setMapBounds }) {
   const {
     VITE_GOOGLE_API_KEY,
     VITE_DEFAULT_VIEW_LAT,
@@ -24,15 +25,6 @@ export default function TransitMap({ encodedPath, isograph, setMapBounds }) {
         disableDefaultUI={true}
         onBoundsChanged={(e) => setMapBounds(e.detail.bounds)}
       >
-        {isograph.map(([lat, lng, cost]) => (
-          <AdvancedMarker
-            key={[lat, lng, cost]}
-            position={{ lat: lat, lng: lng }}
-            title={cost?.toString()}
-            clickable
-          />
-        ))}
-
         {encodedPath && (
           <Polyline
             strokeWeight={8}
@@ -41,12 +33,12 @@ export default function TransitMap({ encodedPath, isograph, setMapBounds }) {
           />
         )}
       </Map>
+      <Isograph />
     </APIProvider>
   );
 }
 
 TransitMap.propTypes = {
   encodedPath: PropTypes.string,
-  isograph: PropTypes.array.isRequired,
   setMapBounds: PropTypes.func.isRequired,
 };
