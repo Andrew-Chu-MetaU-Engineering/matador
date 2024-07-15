@@ -38,15 +38,17 @@ export default function Isograph() {
 
   useEffect(() => {
     if (isographData == null) return;
-    Object.entries(isographData).forEach(([cost, points]) => {
+
+    // draw a contour for each interval level 
+    Object.entries(isographData).forEach(([cost, levelPoints]) => {
       const contour = new google.maps.Polyline({
-        path: [...points, points[0]],
+        path: [...levelPoints, levelPoints[0]],
         geodesic: true,
         strokeColor: "#FF0000",
         strokeOpacity: 1.0,
         strokeWeight: 2,
       });
       contour.setMap(map);
-    })
+    });
   }, [isographData]);
 }
