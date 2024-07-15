@@ -1,47 +1,59 @@
 const isographUtils = require("./IsographUtils");
-const NUM_DIRECTIONS = 8; // number of radial directions to sample
-const STEP_SIZE = 100; // meters
-const ACCEPTABLE_FARE_DIFF = 2; // dollars
-const ACCEPTABLE_DURATION_DIFF = 5 * 60; // seconds
-const MAX_SAMPLES_PER_DIRECTION = 2;
+const NUM_DIRECTIONS = 2; // number of radial directions to sample
+const STEP_SIZE = 500; // meters
+const SAMPLES_PER_DIRECTION = 2;
+const DISTANCES = Array.from(
+  { length: SAMPLES_PER_DIRECTION },
+  (v, i) => STEP_SIZE * (i + 1)
+);
+const DURATION_INTERALS = [5, 10, 15, 30, 60].map((val) => val * 60); // convert min to sec 
+const FARE_INTERVALS = [1, 2, 5, 10, 20]; // in dollars
 
-async function isograph(origin, targetVal, costType, departureTime) {
-  let sampleInfo = Array.from({ length: NUM_DIRECTIONS }, (v, i) => ({
-    points: new Map(),
-    completed: false,
-    nextDistance: STEP_SIZE,
-    direction: (360 / NUM_DIRECTIONS) * i, // degrees clockwise from north
-  }));
+async function isograph(origin, costType, departureTime) {
+  let sampleInfo = Array.from({ length: NUM_DIRECTIONS }, (v, i) => {
+    const direction = (360 / NUM_DIRECTIONS) * i;
+    return {
+      coordinates: DISTANCES.map((distance) =>
+        isographUtils.findCoordinate(origin, distance, direction)
+      ),
+      direction: direction, // degrees clockwise from north
+      costs: [],
+    };
+  });
 
-  for (let id = 0; id < MAX_SAMPLES_PER_DIRECTION; id++) {
-    let samplePoints = sampleInfo.map((sample) =>
-      isographUtils.findCoordinate(
+  const costs = await Promise.all(
+    sampleInfo.map((directionalSamples) =>
+      isographUtils.fetchCosts(
         origin,
-        sample.nextDistance,
-        sample.direction
+        directionalSamples.coordinates,
+        costType,
+        departureTime
       )
-    );
+    )
+  );
 
-    const sampleCosts = await isographUtils.fetchCosts(
-      origin,
-      samplePoints,
-      costType,
-      departureTime
-    );
+  sampleInfo.forEach((sampleDirection, i) => {
+    sampleDirection.costs = costs[i];
+  });
 
-    sampleInfo.forEach((sample, i) => {
-      const [point, cost] = sampleCosts[i];
-      sample.points.set(point, cost);
-      sample.nextDistance += STEP_SIZE;
-      if (costType === "duration") {
-        sample.completed =
-          Math.abs(cost - targetVal) < ACCEPTABLE_DURATION_DIFF;
-      } else if (costType === "fare") {
-        sample.completed = Math.abs(cost - targetVal) < ACCEPTABLE_FARE_DIFF;
-      }
-    });
-  }
-  return isographUtils.get3DPoints(sampleInfo);
+  return sampleInfo
+    .map((directionalSamples) =>
+      isographUtils
+        .predictCostDistances(
+          directionalSamples.costs,
+          DISTANCES,
+          DURATION_INTERALS
+        )
+        .map(([cost, predictedDistance]) => [
+          ...isographUtils.findCoordinate(
+            origin,
+            predictedDistance,
+            directionalSamples.direction
+          ),
+          cost,
+        ])
+    )
+    .flat();
 }
 
 module.exports = { isograph };
