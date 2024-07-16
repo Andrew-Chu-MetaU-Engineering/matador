@@ -37,12 +37,12 @@ app.get("/recommend", async (req, res) => {
 app.get("/isograph", async (req, res) => {
   try {
     const { origin, costType, departureTime } = req.query;
-    const graph = await isograph.isograph(
+    const isographData = await isograph.isograph(
       origin.split(",").map(parseFloat),
       costType,
       departureTime
     );
-    res.status(200).send(graph);
+    res.status(200).send(isographData);
   } catch (error) {
     res.status(500);
   }

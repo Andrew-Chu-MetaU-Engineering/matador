@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
-import { useMap, useApiIsLoaded } from "@vis.gl/react-google-maps";
+import {
+  useMap,
+  useApiIsLoaded,
+  useMapsLibrary,
+} from "@vis.gl/react-google-maps";
 
 export default function Isograph() {
   const { VITE_EXPRESS_API } = import.meta.env;
   const [isographData, setIsographData] = useState(null);
   const apiIsLoaded = useApiIsLoaded();
+  const visualizationLibrary = useMapsLibrary("visualization");
   const map = useMap();
 
   async function fetchIsographData() {
@@ -37,18 +42,16 @@ export default function Isograph() {
   }, [apiIsLoaded, map]);
 
   useEffect(() => {
-    if (isographData == null) return;
+    if (isographData == null || visualizationLibrary == null) return;
 
-    // draw a contour for each interval level 
-    Object.entries(isographData).forEach(([cost, levelPoints]) => {
-      const contour = new google.maps.Polyline({
-        path: [...levelPoints, levelPoints[0]],
-        geodesic: true,
-        strokeColor: "#FF0000",
-        strokeOpacity: 1.0,
-        strokeWeight: 2,
-      });
-      contour.setMap(map);
+    const heatMapData = isographData.map(([lat, lng, cost]) => ({
+      location: new google.maps.LatLng(lat, lng),
+      weight: cost,
+    }));
+    const heatmap = new visualizationLibrary.HeatmapLayer({
+      data: heatMapData,
+      dissipating: true,
     });
-  }, [isographData]);
+    heatmap.setMap(map);
+  }, [isographData, visualizationLibrary]);
 }

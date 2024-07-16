@@ -1,5 +1,10 @@
 const fetchResultsUtils = require("./FetchResultsUtils");
-const { COST_TYPE_DURATION, COST_TYPE_FARE, COST_TYPE_ERROR_MSG } = process.env;
+const {
+  COST_TYPE_DURATION,
+  COST_TYPE_FARE,
+  COST_TYPE_ERROR_MSG,
+  ISOGRAPHS_API,
+} = process.env;
 
 function findCoordinate(origin, distance, direction) {
   const EARTH_RADIUS = 6371000; // meters
@@ -44,37 +49,48 @@ async function fetchCosts(origin, samplePoints, costType, departureTime) {
   }
 }
 
-function predictCostDistances(costs, distances, costIntervals) {
-  let predictedDistances = [];
-  let currentCostIntervalIndex = 0;
-  let currentCostInterval = costIntervals[currentCostIntervalIndex];
+async function insertSampleCosts(sampleInfo, origin, costType, departureTime) {
+  const costs = await Promise.all(
+    sampleInfo.map((directionalSamples) =>
+      fetchCosts(
+        origin,
+        directionalSamples.coordinates,
+        costType,
+        departureTime
+      )
+    )
+  );
+  sampleInfo.forEach((sampleDirection, i) => {
+    sampleDirection.costs = costs[i];
+  });
+}
 
-  for (let i = 0; i < costs.length; i++) {
-    const cost = costs[i];
-    const distance = distances[i];
-    if (cost >= currentCostInterval) {
-      // if prediction point is between samples, linear interpolate
-      const prevCost = i === 0 ? 0 : costs[i - 1];
-      const prevDist = i === 0 ? 0 : distances[i - 1];
-      const slope = (distance - prevDist) / (cost - prevCost);
+async function fetchPolynomialEstimation(
+  costSamples,
+  order,
+  dimensionalSampleCount
+) {
+  try {
+    const response = await fetch(new URL("estimate", ISOGRAPHS_API), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        cost_samples: costSamples,
+        order: order,
+        dim_sample_count: dimensionalSampleCount,
+      }),
+    });
 
-      predictedDistances.push([
-        currentCostInterval,
-        slope * (currentCostInterval - cost) + distance, // point-slope form
-      ]);
-      currentCostInterval = costIntervals[++currentCostIntervalIndex];
-    } else {
-      if (i === costs.length - 1) {
-        // if prediction interval is after all samples, final sample distance is within prediction cost
-        predictedDistances.push([currentCostInterval, distance]);
-      }
-    }
+    return await response.json();
+  } catch (error) {
+    console.log(error.message);
   }
-  return predictedDistances;
 }
 
 module.exports = {
   findCoordinate,
-  fetchCosts,
-  predictCostDistances,
+  insertSampleCosts,
+  fetchPolynomialEstimation,
 };
