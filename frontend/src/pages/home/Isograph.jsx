@@ -39,29 +39,24 @@ export default function Isograph() {
   }
 
   function calculateContours(isographData) {
-    const projection = geoMercator();
-    const stackedPoints = isographData.reduce(
-      (accumulator, [lat, lng, cost]) => {
-        const numPoints = Math.floor(Math.abs(cost));
-        const array = new Array(numPoints).fill(
-          projection([lng, lat]),
-          0,
-          numPoints
-        );
-        return [...accumulator, ...array];
-      },
-      []
+    const WIDTH = 100;
+
+    const costs = isographData.map(([lng, lat, cost]) => cost);
+    const contourGenerator = d3.contours().size([WIDTH, WIDTH]).smooth(true);
+    let contours = contourGenerator(costs).filter(
+      (contour) => contour.value >= 0
     );
 
-    const densityEstimator = d3
-      .contourDensity()
-      .x((point) => point[0])
-      .y((point) => point[1]);
-    const contours = densityEstimator(stackedPoints);
+    const [originLng, originLat, _originCost] = isographData[0];
+    const [diagonalLng, diagonalLat, _diagonalCost] = isographData[WIDTH + 1];
     for (const contour of contours) {
-      contour.coordinates[0][0] = contour.coordinates[0][0].map((coordinate) =>
-        projection.invert(coordinate)
-      );
+      const polygons = contour.coordinates;
+      for (const polygon of polygons) {
+        polygon[0] = polygon[0].map(([costX, costY]) => [
+          costX * (diagonalLng - originLng) + originLng,
+          costY * (diagonalLat - originLat) + originLat,
+        ]);
+      }
     }
 
     const featureCollection = {
