@@ -5,7 +5,6 @@ import {
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
 import * as d3 from "d3";
-import { geoMercator } from "d3-geo";
 
 export default function Isograph() {
   const { VITE_EXPRESS_API } = import.meta.env;
@@ -59,18 +58,45 @@ export default function Isograph() {
       }
     }
 
-    const featureCollection = {
+    return {
       type: "FeatureCollection",
-      features: [],
-    };
-    contours.forEach((contour) =>
-      featureCollection.features.push({
+      features: contours.map((contour) => ({
         type: "Feature",
         geometry: contour,
-        properties: {},
-      })
+        properties: {
+          value: contour.value,
+        },
+      })),
+    };
+  }
+
+  function addIsographStyling(mapData, featureCollection) {
+    const thresholds = featureCollection?.features.map(
+      (feature) => feature.properties.value
     );
-    return featureCollection;
+    const minThresh = Math.min(...thresholds);
+    const maxThresh = Math.max(...thresholds);
+    mapData.setStyle(function (feature) {
+      const cost = feature.getProperty("value");
+      const normalizedCost = (cost - minThresh) / (maxThresh - minThresh);
+      return {
+        fillColor: d3.interpolateTurbo(normalizedCost),
+        fillOpacity: 0.2,
+        strokeColor: "lightgrey",
+        strokeWeight: 1,
+      };
+    });
+
+    mapData.addListener("mouseover", function (e) {
+      mapData.overrideStyle(e.feature, {
+        strokeColor: "white",
+        strokeWeight: 2,
+      });
+    });
+    mapData.addListener("mouseout", function () {
+      mapData.revertStyle();
+    });
+    return mapData;
   }
 
   useEffect(() => {
@@ -82,14 +108,11 @@ export default function Isograph() {
     if (isographData == null || visualizationLibrary == null) return;
 
     try {
+      const featureCollection = calculateContours(isographData);
+
       let data = new google.maps.Data();
-      data.addGeoJson(calculateContours(isographData));
-      data.setStyle({
-        strokeColor: "#FF0000",
-        strokeOpacity: 0.8,
-        fillColor: "#FF0000",
-        fillOpacity: 0.01,
-      });
+      data.addGeoJson(featureCollection);
+      addIsographStyling(data, featureCollection);
       data.setMap(map);
     } catch (error) {
       console.log(error.message);
