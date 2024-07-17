@@ -1,9 +1,8 @@
 import PropTypes from "prop-types";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
-import Isograph from "./Isograph";
 import { Polyline } from "./Polyline";
 
-export default function TransitMap({ encodedPath, setMapBounds }) {
+export default function TransitMap({ encodedPath, setMapBounds, children }) {
   const {
     VITE_GOOGLE_API_KEY,
     VITE_DEFAULT_VIEW_LAT,
@@ -33,7 +32,7 @@ export default function TransitMap({ encodedPath, setMapBounds }) {
           />
         )}
       </Map>
-      <Isograph />
+      {children}
     </APIProvider>
   );
 }
