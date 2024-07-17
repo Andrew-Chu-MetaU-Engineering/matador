@@ -4,6 +4,7 @@ import {
   useApiIsLoaded,
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
+import * as d3 from "d3";
 
 export default function Isograph() {
   const { VITE_EXPRESS_API } = import.meta.env;
@@ -36,6 +37,69 @@ export default function Isograph() {
     }
   }
 
+  function calculateContours(isographData) {
+    const WIDTH = 100;
+
+    const costs = isographData.map(([lng, lat, cost]) => cost);
+    const contourGenerator = d3.contours().size([WIDTH, WIDTH]).smooth(true);
+    let contours = contourGenerator(costs).filter(
+      (contour) => contour.value >= 0
+    );
+
+    const [originLng, originLat, _originCost] = isographData[0];
+    const [diagonalLng, diagonalLat, _diagonalCost] = isographData[WIDTH + 1]; // the point with one increment in each x/y direction in the grid
+    for (const contour of contours) {
+      contour.coordinates = contour.coordinates.map((polygon) =>
+        polygon.map((line) =>
+          line.map(([costX, costY]) => [
+          costX * (diagonalLng - originLng) + originLng,
+          costY * (diagonalLat - originLat) + originLat,
+          ])
+        )
+      );
+    }
+
+    return {
+      type: "FeatureCollection",
+      features: contours.map((contour) => ({
+        type: "Feature",
+        geometry: contour,
+        properties: {
+          value: contour.value,
+        },
+      })),
+    };
+  }
+
+  function addIsographStyling(mapData, featureCollection) {
+    const thresholds = featureCollection?.features.map(
+      (feature) => feature.properties.value
+    );
+    const minThresh = Math.min(...thresholds);
+    const maxThresh = Math.max(...thresholds);
+    mapData.setStyle(function (feature) {
+      const cost = feature.getProperty("value");
+      const normalizedCost = (cost - minThresh) / (maxThresh - minThresh);
+      return {
+        fillColor: d3.interpolateTurbo(normalizedCost),
+        fillOpacity: 0.2,
+        strokeColor: "lightgrey",
+        strokeWeight: 1,
+      };
+    });
+
+    mapData.addListener("mouseover", function (e) {
+      mapData.overrideStyle(e.feature, {
+        strokeColor: "white",
+        strokeWeight: 2,
+      });
+    });
+    mapData.addListener("mouseout", function () {
+      mapData.revertStyle();
+    });
+    return mapData;
+  }
+
   useEffect(() => {
     if (apiIsLoaded == null || map == null) return;
     fetchIsographData();
@@ -44,14 +108,15 @@ export default function Isograph() {
   useEffect(() => {
     if (isographData == null || visualizationLibrary == null) return;
 
-    const heatMapData = isographData.map(([lat, lng, cost]) => ({
-      location: new google.maps.LatLng(lat, lng),
-      weight: cost,
-    }));
-    const heatmap = new visualizationLibrary.HeatmapLayer({
-      data: heatMapData,
-      dissipating: true,
-    });
-    heatmap.setMap(map);
+    try {
+      const featureCollection = calculateContours(isographData);
+
+      let data = new google.maps.Data();
+      data.addGeoJson(featureCollection);
+      addIsographStyling(data, featureCollection);
+      data.setMap(map);
+    } catch (error) {
+      console.error(error.message);
+    }
   }, [isographData, visualizationLibrary]);
 }

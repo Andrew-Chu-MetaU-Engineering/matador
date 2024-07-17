@@ -7,7 +7,7 @@ def generate_isograph(samples, order, dim_sample_count):
     :param samples: A Nx3 matrix, represented as a 2d array, of [lat, lng, cost]
     :param order: The order of the polynomial to generate
     :param dim_sample_count: Number of samples to take along each dimension (latitude and latitude)
-    :return: An array of [lat, lng, cost] points sampled from the polynomial that best fits the data
+    :return: An array of [lng, lat, cost] points sampled from the polynomial that best fits the data
     """
     lat, lng, cost = format_data(samples)
 
@@ -31,7 +31,7 @@ def sample_polynomial(dimension_sample_count, lat, lng, powers_lat, powers_lng, 
     :param powers_lng: A matrix consisting of the polynomial powers of the estimated polynomial,
                         for the longitude independent variable
     :param coefficients: A matrix consisting of the coefficients of the estimated polynomial
-    :return: An array of [lat, lng, cost] samples on the estimated polynomial, where cost > 0
+    :return: An array of [lng, lat, cost] samples on the estimated polynomial, where cost > 0
     """
     estimate_sample_lat, estimate_sample_lng = np.meshgrid(
         np.linspace(lat.min(), lat.max(), dimension_sample_count),
@@ -41,10 +41,8 @@ def sample_polynomial(dimension_sample_count, lat, lng, powers_lat, powers_lng, 
             estimate_sample_lng.reshape(-1, 1) ** powers_lng)
     estimate_cost = np.dot(estimation_matrix, coefficients).reshape(estimate_sample_lat.shape)
 
-    # reshape into 3 columns of [lat, lng, cost]
-    points = np.array([estimate_sample_lat, estimate_sample_lng, estimate_cost]).T.reshape(-1, 3)
-
-    return points[points[:, -1] > 0]
+    # reshape into 3 columns of [lng, lat, cost]
+    return np.array([estimate_sample_lng, estimate_sample_lat, estimate_cost]).T.reshape(-1, 3)
 
 
 def format_data(data):
@@ -53,4 +51,5 @@ def format_data(data):
     :return: An array of Nx1 matrices representing each column of the input
     """
     np_data = np.array(data, np.float64)
+    np_data = np_data[~np.isnan(np_data).any(axis=1)]  # remove rows with NaN
     return [column.reshape(-1, 1) for column in np_data.T]
