@@ -4,6 +4,8 @@ import {
   useApiIsLoaded,
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
+import * as d3 from "d3";
+import { geoMercator } from "d3-geo";
 
 export default function Isograph() {
   const { VITE_EXPRESS_API } = import.meta.env;
@@ -36,6 +38,46 @@ export default function Isograph() {
     }
   }
 
+  function calculateContours(isographData) {
+    const projection = geoMercator();
+    const stackedPoints = isographData.reduce(
+      (accumulator, [lat, lng, cost]) => {
+        const numPoints = Math.floor(Math.abs(cost));
+        const array = new Array(numPoints).fill(
+          projection([lng, lat]),
+          0,
+          numPoints
+        );
+        return [...accumulator, ...array];
+      },
+      []
+    );
+
+    const densityEstimator = d3
+      .contourDensity()
+      .x((point) => point[0])
+      .y((point) => point[1]);
+    const contours = densityEstimator(stackedPoints);
+    for (const contour of contours) {
+      contour.coordinates[0][0] = contour.coordinates[0][0].map((coordinate) =>
+        projection.invert(coordinate)
+      );
+    }
+
+    const featureCollection = {
+      type: "FeatureCollection",
+      features: [],
+    };
+    contours.forEach((contour) =>
+      featureCollection.features.push({
+        type: "Feature",
+        geometry: contour,
+        properties: {},
+      })
+    );
+    return featureCollection;
+  }
+
   useEffect(() => {
     if (apiIsLoaded == null || map == null) return;
     fetchIsographData();
@@ -44,14 +86,18 @@ export default function Isograph() {
   useEffect(() => {
     if (isographData == null || visualizationLibrary == null) return;
 
-    const heatMapData = isographData.map(([lat, lng, cost]) => ({
-      location: new google.maps.LatLng(lat, lng),
-      weight: cost,
-    }));
-    const heatmap = new visualizationLibrary.HeatmapLayer({
-      data: heatMapData,
-      dissipating: true,
-    });
-    heatmap.setMap(map);
+    try {
+      let data = new google.maps.Data();
+      data.addGeoJson(calculateContours(isographData));
+      data.setStyle({
+        strokeColor: "#FF0000",
+        strokeOpacity: 0.8,
+        fillColor: "#FF0000",
+        fillOpacity: 0.01,
+      });
+      data.setMap(map);
+    } catch (error) {
+      console.log(error.message);
+    }
   }, [isographData, visualizationLibrary]);
 }
