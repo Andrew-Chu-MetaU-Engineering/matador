@@ -1,0 +1,41 @@
+#search-filters {
+  display: flex;
+  flex-direction: column;
+}
+
+#transit-filters {
+  display: flex;
+  justify-content: space-between;
+}
+
+#transit-filters > * {
+  width: 48%;
+}
+
+#preference-filters {
+  display: flex;
+  justify-content: space-between;
+}
+
+#star-rating-wrapper,
+#budget-wrapper {
+  width: 48%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#star-rating-spacer {
+  width: 100%;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+#misc-preferences {
+  margin-top: 1rem;
+}
+
+#misc-preferences > * {
+  margin-top: 0.25rem;
+}
