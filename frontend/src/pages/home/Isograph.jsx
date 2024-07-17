@@ -116,7 +116,7 @@ export default function Isograph() {
       addIsographStyling(data, featureCollection);
       data.setMap(map);
     } catch (error) {
-      console.log(error.message);
+      console.error(error.message);
     }
   }, [isographData, visualizationLibrary]);
 }
