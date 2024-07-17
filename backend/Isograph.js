@@ -1,10 +1,10 @@
 const isographUtils = require("./IsographUtils");
 const {
-  NUM_DIRECTIONS,
+  NUM_DIRECTIONS, // number of radial directions to sample
   SAMPLES_PER_DIRECTION,
-  STEP_SIZE,
+  STEP_SIZE, // increments to sample, in meters
   POLYNOMIAL_ORDER,
-  POLYNOMIAL_DIMENSIONAL_SAMPLE_COUNT,
+  POLYNOMIAL_DIMENSIONAL_SAMPLE_COUNT, // number of samples to take along each side of lat/lng grid
 } = process.env;
 const SAMPLING_DISTANCES = Array.from(
   { length: SAMPLES_PER_DIRECTION },
