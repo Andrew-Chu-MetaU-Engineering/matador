@@ -47,15 +47,16 @@ export default function Isograph() {
     );
 
     const [originLng, originLat, _originCost] = isographData[0];
-    const [diagonalLng, diagonalLat, _diagonalCost] = isographData[WIDTH + 1];
+    const [diagonalLng, diagonalLat, _diagonalCost] = isographData[WIDTH + 1]; // the point with one increment in each x/y direction in the grid
     for (const contour of contours) {
-      const polygons = contour.coordinates;
-      for (const polygon of polygons) {
-        polygon[0] = polygon[0].map(([costX, costY]) => [
+      contour.coordinates = contour.coordinates.map((polygon) =>
+        polygon.map((line) =>
+          line.map(([costX, costY]) => [
           costX * (diagonalLng - originLng) + originLng,
           costY * (diagonalLat - originLat) + originLat,
-        ]);
-      }
+          ])
+        )
+      );
     }
 
     return {
