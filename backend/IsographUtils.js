@@ -115,6 +115,7 @@ async function fetchPolynomialEstimation(
 }
 
 module.exports = {
+  geocode,
   findCoordinate,
   insertSampleCosts,
   fetchPolynomialEstimation,
