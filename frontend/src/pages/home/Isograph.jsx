@@ -38,16 +38,21 @@ export default function Isograph() {
   }
 
   function calculateContours(isographData) {
-    const WIDTH = 100;
+    const gridWidth = Math.sqrt(isographData.length);
 
     const costs = isographData.map(([lng, lat, cost]) => cost);
-    const contourGenerator = d3.contours().size([WIDTH, WIDTH]).smooth(true);
+    const contourGenerator = d3
+      .contours()
+      .size([gridWidth, gridWidth])
+      .thresholds(10)
+      .smooth(true);
     let contours = contourGenerator(costs).filter(
       (contour) => contour.value >= 0
     );
 
     const [originLng, originLat, _originCost] = isographData[0];
-    const [diagonalLng, diagonalLat, _diagonalCost] = isographData[WIDTH + 1]; // the point with one increment in each x/y direction in the grid
+    const [diagonalLng, diagonalLat, _diagonalCost] =
+      isographData[gridWidth + 1]; // the point with one increment in each x/y direction in the grid
     for (const contour of contours) {
       contour.coordinates = contour.coordinates.map((polygon) =>
         polygon.map((line) =>
