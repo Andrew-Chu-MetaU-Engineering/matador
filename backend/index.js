@@ -36,9 +36,9 @@ app.get("/recommend", async (req, res) => {
 
 app.get("/isograph", async (req, res) => {
   try {
-    const { origin, costType, departureTime } = req.query;
+    const { originAddress, costType, departureTime } = req.query;
     const isographData = await isograph.isograph(
-      origin.split(",").map(parseFloat),
+      originAddress,
       costType,
       departureTime
     );

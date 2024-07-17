@@ -15,13 +15,13 @@ export default function Isograph() {
 
   async function fetchIsographData() {
     // TODO to be changed to user inputs
-    const ORIGIN = [37.42, -122.1];
+    const ORIGIN_ADDRESS = "900 High School Way";
     const COST_TYPE = "duration";
     const DEPARTURE_TIME = new Date(Date.now()).toISOString();
 
     try {
       let url = new URL("isograph", VITE_EXPRESS_API);
-      url.searchParams.append("origin", ORIGIN);
+      url.searchParams.append("originAddress", ORIGIN_ADDRESS);
       url.searchParams.append("costType", COST_TYPE);
       url.searchParams.append("departureTime", DEPARTURE_TIME);
 

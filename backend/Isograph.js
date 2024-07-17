@@ -11,12 +11,14 @@ const SAMPLING_DISTANCES = Array.from(
   (v, i) => STEP_SIZE * (i + 1)
 );
 
-async function isograph(origin, costType, departureTime) {
+async function isograph(originAddress, costType, departureTime) {
+  const originCoordinates = await isographUtils.geocode(originAddress);
+
   let sampleInfo = Array.from({ length: NUM_DIRECTIONS }, (v, i) => {
     const direction = (360 / NUM_DIRECTIONS) * i;
     return {
       coordinates: SAMPLING_DISTANCES.map((distance) =>
-        isographUtils.findCoordinate(origin, distance, direction)
+        isographUtils.findCoordinate(originCoordinates, distance, direction)
       ),
       direction: direction, // degrees clockwise from north
       costs: [],
@@ -26,7 +28,7 @@ async function isograph(origin, costType, departureTime) {
   // costs field filled separately for async/await concurrency
   await isographUtils.insertSampleCosts(
     sampleInfo,
-    origin,
+    originCoordinates,
     costType,
     departureTime
   );

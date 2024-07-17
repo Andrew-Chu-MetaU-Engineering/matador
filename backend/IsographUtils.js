@@ -1,10 +1,35 @@
 const fetchResultsUtils = require("./FetchResultsUtils");
 const {
+  GOOGLE_API_KEY,
+  GEOCODING_ENDPOINT,
   COST_TYPE_DURATION,
   COST_TYPE_FARE,
   COST_TYPE_ERROR_MSG,
   ISOGRAPHS_API,
 } = process.env;
+
+async function geocode(originAddress) {
+  try {
+    let request = new URL(GEOCODING_ENDPOINT);
+    request.searchParams.append("address", originAddress);
+    request.searchParams.append("key", GOOGLE_API_KEY);
+
+    const response = await fetch(request);
+    if (!response.ok) {
+      throw new Error(`HTTP error. Status ${response.status}`);
+    }
+
+    const geocodeData = await response.json();
+    if (geocodeData?.results.length === 0) {
+      throw new Error(`Geocoding failed.`);
+    }
+
+    const coordinate = geocodeData.results[0].geometry.location;
+    return [coordinate.lat, coordinate.lng];
+  } catch (error) {
+    console.error(error.message);
+  }
+}
 
 function findCoordinate(origin, distance, direction) {
   const EARTH_RADIUS = 6371000; // meters
@@ -90,6 +115,7 @@ async function fetchPolynomialEstimation(
 }
 
 module.exports = {
+  geocode,
   findCoordinate,
   insertSampleCosts,
   fetchPolynomialEstimation,
