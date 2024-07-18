@@ -152,6 +152,10 @@ export default function Home({ userId }) {
       isAccessible: false,
       costType: "Duration",
     },
+    validate: {
+      originAddress: (value) =>
+        value.length < 1 ? "Enter an origin address" : null,
+    },
   });
 
   return (
