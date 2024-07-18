@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Paper, Box, ScrollArea } from "@mantine/core";
+import { Paper, Box, ScrollArea, Loader } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
 
@@ -17,6 +17,7 @@ export default function Home({ userId }) {
   const [activeOption, setActiveOption] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
   const [noResultsFound, setNoResultsFound] = useState(false);
+  const [isResultsLoading, setIsResultsLoading] = useState(false);
   const [isographSettings, setIsographSettings] = useState({
     originAddress: "",
     costType: "",
@@ -44,6 +45,7 @@ export default function Home({ userId }) {
 
   async function fetchRecommendations(query, settings) {
     try {
+      setIsResultsLoading(true);
       let url = new URL("recommend", VITE_EXPRESS_API);
       url.searchParams.append("userId", profile.id);
       url.searchParams.append("searchQuery", query);
@@ -59,6 +61,7 @@ export default function Home({ userId }) {
     } catch (error) {
       console.error("Error fetching recommendations:", error);
     }
+    setIsResultsLoading(false);
   }
 
   async function handleFormSubmit(values, e) {
@@ -163,6 +166,11 @@ export default function Home({ userId }) {
       <Paper id="home-body">
         <section id="search-panel">
           <Search form={form} handleFormSubmit={handleFormSubmit} />
+          {isResultsLoading && (
+            <div id="results-loading-wrapper">
+              <Loader color="blue" size="xl" type="dots" />
+            </div>
+          )}
           <ScrollArea id="results-scrollarea">
             {options?.length > 0 &&
               options.map((option) => (
