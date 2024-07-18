@@ -69,7 +69,7 @@ function isOpenOnArrival(
   utcOffsetMinutes
 ) {
   // incomplete hours data should not hurt recommendation rankings
-  if (openingHours.periods.length < 7) {
+  if (openingHours?.periods?.length < 7) {
     // check if >=1 day of the week has missing hours data
     return true;
   }
