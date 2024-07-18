@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import TransitMap from "./TransitMap";
 import Search from "./Search";
 import SearchResult from "./SearchResult";
+import Isograph from "./Isograph";
 import "./Home.css";
 
 export default function Home({ userId }) {
@@ -15,6 +16,11 @@ export default function Home({ userId }) {
   const [options, setOptions] = useState([]);
   const [activeOption, setActiveOption] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
+  const [isographSettings, setIsographSettings] = useState({
+    originAddress: "",
+    costType: "",
+    departureTime: "",
+  });
 
   useEffect(() => {
     if (userId != null) fetchProfile(userId);
@@ -50,6 +56,19 @@ export default function Home({ userId }) {
       setOptions(recommendations);
     } catch (error) {
       console.error("Error fetching recommendations:", error);
+    }
+  }
+
+  async function handleFormSubmit(values, e) {
+    switch (
+      e.nativeEvent.submitter.name // value from component name
+    ) {
+      case "search":
+        await handleSearch(values);
+        break;
+      case "isograph":
+        handleDisplayIsograph(values);
+        break;
     }
   }
 
@@ -100,6 +119,18 @@ export default function Home({ userId }) {
     await fetchRecommendations(query, settings);
   }
 
+  function handleDisplayIsograph(values) {
+    const { originAddress, departureTime, isCurrentDepartureTime, costType } =
+      values;
+    setIsographSettings({
+      originAddress: originAddress,
+      costType: costType.toLowerCase(),
+      departureTime: isCurrentDepartureTime
+        ? new Date(Date.now()).toISOString()
+        : dayjs(departureTime).toISOString(),
+    });
+  }
+
   const form = useForm({
     mode: "uncontrolled",
     initialValues: {
@@ -116,6 +147,7 @@ export default function Home({ userId }) {
       goodForChildren: false,
       goodForGroups: false,
       isAccessible: false,
+      costType: "Duration",
     },
   });
 
@@ -123,7 +155,7 @@ export default function Home({ userId }) {
     <>
       <Paper id="home-body">
         <section id="search-panel">
-          <Search form={form} handleSearch={handleSearch} />
+          <Search form={form} handleFormSubmit={handleFormSubmit} />
           <ScrollArea id="results-scrollarea">
             {options?.length > 0 &&
               options.map((option) => (
@@ -141,7 +173,9 @@ export default function Home({ userId }) {
             id="google-map"
             encodedPath={activeOption?.route}
             setMapBounds={setMapBounds}
-          />
+          >
+            <Isograph isographSettings={isographSettings} />
+          </TransitMap>
         </Box>
       </Paper>
     </>

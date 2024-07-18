@@ -1,29 +1,20 @@
 import { useEffect, useState } from "react";
-import {
-  useMap,
-  useApiIsLoaded,
-  useMapsLibrary,
-} from "@vis.gl/react-google-maps";
+import PropTypes from "prop-types";
+import { useMap, useApiIsLoaded } from "@vis.gl/react-google-maps";
 import * as d3 from "d3";
+const { VITE_EXPRESS_API } = import.meta.env;
 
-export default function Isograph() {
-  const { VITE_EXPRESS_API } = import.meta.env;
+export default function Isograph({ isographSettings }) {
   const [isographData, setIsographData] = useState(null);
   const apiIsLoaded = useApiIsLoaded();
-  const visualizationLibrary = useMapsLibrary("visualization");
   const map = useMap();
 
-  async function fetchIsographData() {
-    // TODO to be changed to user inputs
-    const ORIGIN_ADDRESS = "900 High School Way";
-    const COST_TYPE = "duration";
-    const DEPARTURE_TIME = new Date(Date.now()).toISOString();
-
+  async function fetchIsographData(originAddress, costType, departureTime) {
     try {
       let url = new URL("isograph", VITE_EXPRESS_API);
-      url.searchParams.append("originAddress", ORIGIN_ADDRESS);
-      url.searchParams.append("costType", COST_TYPE);
-      url.searchParams.append("departureTime", DEPARTURE_TIME);
+      url.searchParams.append("originAddress", originAddress);
+      url.searchParams.append("costType", costType);
+      url.searchParams.append("departureTime", departureTime);
 
       const response = await fetch(url);
 
@@ -57,8 +48,8 @@ export default function Isograph() {
       contour.coordinates = contour.coordinates.map((polygon) =>
         polygon.map((line) =>
           line.map(([costX, costY]) => [
-          costX * (diagonalLng - originLng) + originLng,
-          costY * (diagonalLat - originLat) + originLat,
+            costX * (diagonalLng - originLng) + originLng,
+            costY * (diagonalLat - originLat) + originLat,
           ])
         )
       );
@@ -106,12 +97,23 @@ export default function Isograph() {
   }
 
   useEffect(() => {
-    if (apiIsLoaded == null || map == null) return;
-    fetchIsographData();
-  }, [apiIsLoaded, map]);
+    if (apiIsLoaded == null || map == null || isographSettings == null) {
+      return;
+    }
+    const { originAddress, costType, departureTime } = isographSettings;
+    if (
+      originAddress.length === 0 ||
+      costType.length === 0 ||
+      departureTime.length === 0
+    ) {
+      return;
+    } else {
+      fetchIsographData(originAddress, costType, departureTime);
+    }
+  }, [isographSettings, apiIsLoaded, map]);
 
   useEffect(() => {
-    if (isographData == null || visualizationLibrary == null) return;
+    if (isographData == null) return;
 
     try {
       const featureCollection = calculateContours(isographData);
@@ -123,5 +125,9 @@ export default function Isograph() {
     } catch (error) {
       console.error(error.message);
     }
-  }, [isographData, visualizationLibrary]);
+  }, [isographData]);
 }
+
+Isograph.propTypes = {
+  isographSettings: PropTypes.object,
+};

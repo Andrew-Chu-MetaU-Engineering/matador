@@ -20,14 +20,16 @@ import {
 import SearchFilters from "./SearchFilters";
 import "./Search.css";
 
-export default function Search({ form, handleSearch }) {
+export default function Search({ form, handleFormSubmit }) {
   const [showFilters, setShowFilters] = useState(true);
   const [useCurrentAsDepartureTime, setUseCurrentAsDepartureTime] =
     useState(true);
 
   return (
     <Paper id="search-pane" shadow="xs" radius="md">
-      <form onSubmit={form.onSubmit((values) => handleSearch(values))}>
+      <form
+        onSubmit={form.onSubmit((values, e) => handleFormSubmit(values, e))}
+      >
         <TextInput
           key={form.key("originAddress")}
           {...form.getInputProps("originAddress")}
@@ -59,8 +61,14 @@ export default function Search({ form, handleSearch }) {
           mt="xs"
         />
         <Group justify="space-between" mt="md" mb="md">
-          <SegmentedControl data={["Duration", "Fare"]} />
-          <Button variant="filled">Explore</Button>
+          <SegmentedControl
+            key={form.key("costType")}
+            {...form.getInputProps("costType", { type: "checkbox" })}
+            data={["Duration", "Fare"]}
+          />
+          <Button type="submit" name="isograph" variant="filled">
+            Explore
+          </Button>
         </Group>
         <span id="searchbar-span">
           <div id="searchbar-wrapper">
@@ -73,7 +81,12 @@ export default function Search({ form, handleSearch }) {
               placeholder="Search"
               leftSection={<IconMapSearch stroke={1.5} />}
               rightSection={
-                <ActionIcon type="submit" radius="sm" variant="filled">
+                <ActionIcon
+                  type="submit"
+                  name="search"
+                  radius="sm"
+                  variant="filled"
+                >
                   <IconArrowRight stroke={1.5} />
                 </ActionIcon>
               }
@@ -95,5 +108,5 @@ export default function Search({ form, handleSearch }) {
 
 Search.propTypes = {
   form: PropTypes.object.isRequired,
-  handleSearch: PropTypes.func.isRequired,
+  handleFormSubmit: PropTypes.func.isRequired,
 };
