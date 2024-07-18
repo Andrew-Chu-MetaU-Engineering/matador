@@ -42,9 +42,8 @@ export default function Isograph({ isographSettings }) {
       (contour) => contour.value >= 0
     );
 
-    const [originLng, originLat, _originCost] = isographData[0];
-    const [diagonalLng, diagonalLat, _diagonalCost] =
-      isographData[gridWidth + 1]; // the point with one increment in each x/y direction in the grid
+    const [originLng, originLat] = isographData[0];
+    const [diagonalLng, diagonalLat] = isographData[gridWidth + 1]; // the point with one increment in each x/y direction in the grid
     for (const contour of contours) {
       contour.coordinates = contour.coordinates.map((polygon) =>
         polygon.map((line) =>
@@ -82,6 +81,7 @@ export default function Isograph({ isographSettings }) {
         fillOpacity: 0.2,
         strokeColor: "lightgrey",
         strokeWeight: 1,
+        zIndex: normalizedCost,
       };
     });
 

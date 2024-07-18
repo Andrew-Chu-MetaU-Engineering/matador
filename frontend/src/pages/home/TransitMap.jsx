@@ -40,4 +40,5 @@ export default function TransitMap({ encodedPath, setMapBounds, children }) {
 TransitMap.propTypes = {
   encodedPath: PropTypes.string,
   setMapBounds: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired,
 };
