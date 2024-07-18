@@ -6,6 +6,7 @@ const { VITE_EXPRESS_API } = import.meta.env;
 
 export default function Isograph({ isographSettings }) {
   const [isographData, setIsographData] = useState(null);
+  const [isographMapLayer, setIsographMapLayer] = useState(null);
   const apiIsLoaded = useApiIsLoaded();
   const map = useMap();
 
@@ -73,7 +74,7 @@ export default function Isograph({ isographSettings }) {
     );
     const minThresh = Math.min(...thresholds);
     const maxThresh = Math.max(...thresholds);
-    mapData.setStyle(function (feature) {
+    mapData.setStyle((feature) => {
       const cost = feature.getProperty("value");
       const normalizedCost = (cost - minThresh) / (maxThresh - minThresh);
       return {
@@ -84,13 +85,13 @@ export default function Isograph({ isographSettings }) {
       };
     });
 
-    mapData.addListener("mouseover", function (e) {
+    mapData.addListener("mouseover", (e) => {
       mapData.overrideStyle(e.feature, {
         strokeColor: "white",
         strokeWeight: 2,
       });
     });
-    mapData.addListener("mouseout", function () {
+    mapData.addListener("mouseout", () => {
       mapData.revertStyle();
     });
     return mapData;
@@ -99,7 +100,10 @@ export default function Isograph({ isographSettings }) {
   useEffect(() => {
     if (apiIsLoaded == null || map == null || isographSettings == null) {
       return;
+    } else if (isographMapLayer == null) {
+      setIsographMapLayer(new google.maps.Data());
     }
+
     const { originAddress, costType, departureTime } = isographSettings;
     if (
       originAddress.length === 0 ||
@@ -115,13 +119,17 @@ export default function Isograph({ isographSettings }) {
   useEffect(() => {
     if (isographData == null) return;
 
+    // reset data layer
+    isographMapLayer.forEach((feature) => {
+      isographMapLayer.remove(feature);
+    });
+
     try {
       const featureCollection = calculateContours(isographData);
 
-      let data = new google.maps.Data();
-      data.addGeoJson(featureCollection);
-      addIsographStyling(data, featureCollection);
-      data.setMap(map);
+      isographMapLayer.addGeoJson(featureCollection);
+      addIsographStyling(isographMapLayer, featureCollection);
+      isographMapLayer.setMap(map);
     } catch (error) {
       console.error(error.message);
     }
