@@ -29,3 +29,8 @@
   display: flex;
   height: 100vh;
 }
+
+#results-loading-wrapper {
+  display: flex;
+  justify-content: center;
+}
