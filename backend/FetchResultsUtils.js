@@ -195,6 +195,10 @@ async function getOptions(
     nextPageToken
   );
 
+  if (places?.length == 0) {
+    return { options: [], nextPageToken: null };
+  }
+
   const routesData = await fetchRouteMatrix(
     originAddress,
     places.map((place) => place.formattedAddress),

@@ -16,6 +16,7 @@ export default function Home({ userId }) {
   const [options, setOptions] = useState([]);
   const [activeOption, setActiveOption] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
+  const [noResultsFound, setNoResultsFound] = useState(false);
   const [isographSettings, setIsographSettings] = useState({
     originAddress: "",
     costType: "",
@@ -54,6 +55,7 @@ export default function Home({ userId }) {
       }
       const recommendations = await response.json();
       setOptions(recommendations);
+      setNoResultsFound(recommendations.length === 0);
     } catch (error) {
       console.error("Error fetching recommendations:", error);
     }
@@ -75,6 +77,7 @@ export default function Home({ userId }) {
   async function handleSearch(values) {
     setOptions(null);
     setActiveOption(null);
+    setNoResultsFound(false);
 
     const {
       query,
@@ -166,6 +169,9 @@ export default function Home({ userId }) {
                   setActiveOption={setActiveOption}
                 />
               ))}
+            {noResultsFound && (
+              <p>No results found. Please try a different search.</p>
+            )}
           </ScrollArea>
         </section>
         <Box id="map-area">

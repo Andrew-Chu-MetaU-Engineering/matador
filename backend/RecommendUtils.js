@@ -131,6 +131,8 @@ async function fetchRecommendations(numRecommendations, settings, query) {
       );
       nextPageToken = refetchNextPageToken;
     }
+
+    if (nextPageToken == null) break;
     if (isInitialFetch) isInitialFetch = false;
     tries += 1;
   }
