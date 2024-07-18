@@ -112,10 +112,10 @@ async function recommend(query, interests, settings) {
     const bId = b.place.id;
     return (
       INTEREST_SCORE_WEIGHT *
-        (interestScores.get(aId) - interestScores.get(bId)) +
+        (interestScores.get(bId) - interestScores.get(aId)) +
       PREFERENCE_SCORE_WEIGHT *
-        (preferenceScores.get(aId) - preferenceScores.get(bId)) +
-      TRANSIT_SCORE_WEIGHT * (transitScores.get(aId) - transitScores.get(bId))
+        (preferenceScores.get(bId) - preferenceScores.get(aId)) +
+      TRANSIT_SCORE_WEIGHT * (transitScores.get(bId) - transitScores.get(aId))
     );
   };
 
