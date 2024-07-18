@@ -69,7 +69,7 @@ function isOpenOnArrival(
   utcOffsetMinutes
 ) {
   // incomplete hours data should not hurt recommendation rankings
-  if (openingHours.periods.length < 7) {
+  if (openingHours?.periods?.length < 7) {
     // check if >=1 day of the week has missing hours data
     return true;
   }
@@ -131,6 +131,8 @@ async function fetchRecommendations(numRecommendations, settings, query) {
       );
       nextPageToken = refetchNextPageToken;
     }
+
+    if (nextPageToken == null) break;
     if (isInitialFetch) isInitialFetch = false;
     tries += 1;
   }
