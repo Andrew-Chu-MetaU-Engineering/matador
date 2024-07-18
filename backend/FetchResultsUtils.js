@@ -37,6 +37,10 @@ async function fetchRoute(originAddress, destinationAddress, departureTime) {
         departureTime: departureTime,
       }),
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error on Routes. Status ${response.status}`);
+    }
     return await response.json();
   } catch (error) {
     console.error(error.message);
@@ -104,7 +108,9 @@ async function fetchRouteMatrix(
       },
       body: JSON.stringify(requestBody),
     });
-
+    if (!response.ok) {
+      throw new Error(`HTTP error on RouteMatrix. Status ${response.status}`);
+    }
     const routeMatrix = await response.json();
     return routeMatrix.sort((a, b) => a.destinationIndex - b.destinationIndex);
   } catch (error) {
@@ -120,49 +126,56 @@ async function fetchPlaces(
   nextPageToken = null
 ) {
   // retrieves locations matching query text, with a bias toward a geographical radius
-  const FIELDS = [
-    "nextPageToken",
-    "places.id",
-    "places.displayName.text",
-    "places.types",
-    "places.formattedAddress",
-    "places.rating",
-    "places.priceLevel",
-    "places.currentOpeningHours.periods",
-    "places.utcOffsetMinutes",
-    "places.editorialSummary",
-    "places.goodForChildren",
-    "places.goodForGroups",
-    "places.accessibilityOptions",
-  ];
-  const requestBody = {
-    textQuery: searchQuery,
-    locationBias: {
-      rectangle: {
-        ...locationBiasRect,
+  try {
+    const FIELDS = [
+      "nextPageToken",
+      "places.id",
+      "places.displayName.text",
+      "places.types",
+      "places.formattedAddress",
+      "places.rating",
+      "places.priceLevel",
+      "places.currentOpeningHours.periods",
+      "places.utcOffsetMinutes",
+      "places.editorialSummary",
+      "places.goodForChildren",
+      "places.goodForGroups",
+      "places.accessibilityOptions",
+    ];
+    const requestBody = {
+      textQuery: searchQuery,
+      locationBias: {
+        rectangle: {
+          ...locationBiasRect,
+        },
       },
-    },
-    pageSize: numRequests,
-  };
+      pageSize: numRequests,
+    };
 
-  if (!isFirstRequest) {
-    if (nextPageToken == null) {
-      return {};
-    } else {
-      requestBody.pageToken = nextPageToken;
+    if (!isFirstRequest) {
+      if (nextPageToken == null) {
+        return {};
+      } else {
+        requestBody.pageToken = nextPageToken;
+      }
     }
-  }
 
-  const response = await fetch(new URL(TEXTSEARCH_PLACES_ENDPOINT), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": GOOGLE_API_KEY,
-      "X-Goog-FieldMask": FIELDS.join(),
-    },
-    body: JSON.stringify(requestBody),
-  });
-  return await response.json();
+    const response = await fetch(new URL(TEXTSEARCH_PLACES_ENDPOINT), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_API_KEY,
+        "X-Goog-FieldMask": FIELDS.join(),
+      },
+      body: JSON.stringify(requestBody),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error on Places. Status ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(error.message);
+  }
 }
 
 async function getOptions(
