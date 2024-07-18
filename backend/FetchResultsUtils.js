@@ -39,7 +39,7 @@ async function fetchRoute(originAddress, destinationAddress, departureTime) {
     });
     return await response.json();
   } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
   }
 }
 
@@ -108,7 +108,7 @@ async function fetchRouteMatrix(
     const routeMatrix = await response.json();
     return routeMatrix.sort((a, b) => a.destinationIndex - b.destinationIndex);
   } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
   }
 }
 
