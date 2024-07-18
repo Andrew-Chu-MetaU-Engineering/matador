@@ -68,13 +68,13 @@ export default function Isograph({ isographSettings }) {
     };
   }
 
-  function addIsographStyling(mapData, featureCollection) {
+  function addIsographStyling(mapLayer, featureCollection) {
     const thresholds = featureCollection?.features.map(
       (feature) => feature.properties.value
     );
     const minThresh = Math.min(...thresholds);
     const maxThresh = Math.max(...thresholds);
-    mapData.setStyle((feature) => {
+    mapLayer.setStyle((feature) => {
       const cost = feature.getProperty("value");
       const normalizedCost = (cost - minThresh) / (maxThresh - minThresh);
       return {
@@ -85,16 +85,15 @@ export default function Isograph({ isographSettings }) {
       };
     });
 
-    mapData.addListener("mouseover", (e) => {
-      mapData.overrideStyle(e.feature, {
+    mapLayer.addListener("mouseover", (e) => {
+      mapLayer.overrideStyle(e.feature, {
         strokeColor: "white",
         strokeWeight: 2,
       });
     });
-    mapData.addListener("mouseout", () => {
-      mapData.revertStyle();
+    mapLayer.addListener("mouseout", () => {
+      mapLayer.revertStyle();
     });
-    return mapData;
   }
 
   useEffect(() => {
