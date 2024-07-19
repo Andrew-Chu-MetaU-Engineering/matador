@@ -83,12 +83,9 @@ export default function Isograph({ isographSettings }) {
         break;
     }
 
-    let displayCost =
-      i === contours.length - 1
-        ? `> ${prepend}${contours[i].value}${append}`
-        : `< ${prepend}${contours[i + 1].value}${append}`;
-
-    return displayCost;
+    return i === contours.length - 1
+      ? `> ${prepend}${contours[i].value}${append}`
+      : `< ${prepend}${contours[i + 1].value}${append}`;
   }
 
   function addIsographStyling(mapLayer, featureCollection) {
