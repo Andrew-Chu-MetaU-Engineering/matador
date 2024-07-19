@@ -30,8 +30,7 @@ function Profile({ userId }) {
     }
   }
 
-  async function addInterest() {
-    if (interests.includes(interestInput)) return;
+  async function editInterests(interests) {
     try {
       const response = await fetch(
         new URL(`user/${userId}/interests`, VITE_EXPRESS_API),
@@ -41,7 +40,7 @@ function Profile({ userId }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            interests: [...interests, interestInput],
+            interests: interests,
           }),
         }
       );
@@ -53,8 +52,19 @@ function Profile({ userId }) {
       fetchInterests();
       setInterestInput("");
     } catch (error) {
-      console.error("Error adding interest:", error);
+      console.error("Error editing interests:", error);
     }
+  }
+
+  async function addInterest() {
+    if (interests.includes(interestInput)) return;
+    await editInterests([...interests, interestInput]);
+  }
+
+  async function handleRemoveInterest(deletionInterest) {
+    await editInterests(
+      interests.filter((interest) => interest !== deletionInterest)
+    );
   }
 
   return (
@@ -83,7 +93,11 @@ function Profile({ userId }) {
       />
 
       {interests?.map((interest) => (
-        <InterestItem key={interest} interest={interest} />
+        <InterestItem
+          key={interest}
+          interest={interest}
+          handleRemoveInterest={handleRemoveInterest}
+        />
       ))}
     </Paper>
   );
