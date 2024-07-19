@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { TextInput, Paper, ActionIcon, List } from "@mantine/core";
+import { TextInput, Paper, ActionIcon } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
+import InterestItem from "./InterestItem";
 import "./Profile.css";
 
 function Profile({ userId }) {
@@ -81,11 +82,9 @@ function Profile({ userId }) {
         }
       />
 
-      <List spacing="xs" size="sm" center mt="md">
-        {interests?.map((interest) => (
-          <List.Item key={interest}>{interest}</List.Item>
-        ))}
-      </List>
+      {interests?.map((interest) => (
+        <InterestItem key={interest} interest={interest} />
+      ))}
     </Paper>
   );
 }
