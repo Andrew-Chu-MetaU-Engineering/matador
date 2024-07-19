@@ -10,6 +10,7 @@ export default function Isograph({ isographSettings }) {
   const [isographData, setIsographData] = useState(null);
   const [isographMapLayer, setIsographMapLayer] = useState(null);
   const [tooltipValue, setTooltipValue] = useState(null);
+  const [mouseListeners, setMouseListeners] = useState(null);
   const apiIsLoaded = useApiIsLoaded();
   const map = useMap();
 
@@ -105,18 +106,28 @@ export default function Isograph({ isographSettings }) {
         zIndex: normalizedCost,
       };
     });
+  }
 
-    mapLayer.addListener("mouseover", (e) => {
-      setTooltipValue(e.feature.getProperty("displayCost"));
-      mapLayer.overrideStyle(e.feature, {
-        strokeColor: "white",
-        strokeWeight: 2,
-      });
-    });
-    mapLayer.addListener("mouseout", () => {
+  function addListeners(mapLayer) {
+    const mouseoverListenerIndentifier = mapLayer.addListener(
+      "mouseover",
+      (e) => {
+        setTooltipValue(e.feature.getProperty("displayCost"));
+        mapLayer.overrideStyle(e.feature, {
+          strokeColor: "white",
+          strokeWeight: 2,
+        });
+      }
+    );
+    const mouseoutListenerIdentifier = mapLayer.addListener("mouseout", () => {
       setTooltipValue("");
       mapLayer.revertStyle(null);
     });
+
+    setMouseListeners([
+      mouseoverListenerIndentifier,
+      mouseoutListenerIdentifier,
+    ]);
   }
 
   useEffect(() => {
@@ -145,12 +156,18 @@ export default function Isograph({ isographSettings }) {
     isographMapLayer.forEach((feature) => {
       isographMapLayer.remove(feature);
     });
+    // remove listeners
+    mouseListeners?.forEach((listener) => {
+      listener.remove();
+    });
+    setMouseListeners(null);
 
     try {
       const featureCollection = calculateContours(isographData);
 
       isographMapLayer.addGeoJson(featureCollection);
       addIsographStyling(isographMapLayer, featureCollection);
+      addListeners(isographMapLayer);
       isographMapLayer.setMap(map);
     } catch (error) {
       console.error(error.message);
