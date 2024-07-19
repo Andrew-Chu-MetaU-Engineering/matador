@@ -4,6 +4,7 @@ import { TextInput, Paper, ActionIcon } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import InterestItem from "./InterestItem";
 import "./Profile.css";
+import HomeButton from "../../components/HomeButton";
 
 function Profile({ userId }) {
   const { VITE_EXPRESS_API } = import.meta.env;
@@ -69,36 +70,39 @@ function Profile({ userId }) {
 
   return (
     <Paper id="profile-body">
-      <TextInput
-        value={interestInput}
-        onChange={(e) => setInterestInput(e.currentTarget.value)}
-        id="profile-text-input"
-        radius="xl"
-        size="xl"
-        placeholder="Add interests"
-        rightSectionWidth={58}
-        leftSection={
-          <img id="profile-input-bull-icon" src="noun-project-bull.svg" />
-        }
-        rightSection={
-          <ActionIcon
-            onClick={addInterest}
-            size="lg"
-            radius="xl"
-            variant="filled"
-          >
-            <IconPlus stroke={3} />
-          </ActionIcon>
-        }
-      />
-
-      {interests?.map((interest) => (
-        <InterestItem
-          key={interest}
-          interest={interest}
-          handleRemoveInterest={handleRemoveInterest}
+      <HomeButton />
+      <Paper id="profile-interest-body">
+        <TextInput
+          value={interestInput}
+          onChange={(e) => setInterestInput(e.currentTarget.value)}
+          id="profile-text-input"
+          radius="xl"
+          size="xl"
+          placeholder="Add interests"
+          rightSectionWidth={58}
+          leftSection={
+            <img id="profile-input-bull-icon" src="noun-project-bull.svg" />
+          }
+          rightSection={
+            <ActionIcon
+              onClick={addInterest}
+              size="lg"
+              radius="xl"
+              variant="filled"
+            >
+              <IconPlus stroke={3} />
+            </ActionIcon>
+          }
         />
-      ))}
+
+        {interests?.map((interest) => (
+          <InterestItem
+            key={interest}
+            interest={interest}
+            handleRemoveInterest={handleRemoveInterest}
+          />
+        ))}
+      </Paper>
     </Paper>
   );
 }
