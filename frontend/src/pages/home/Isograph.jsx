@@ -9,7 +9,7 @@ const { VITE_EXPRESS_API, VITE_COST_TYPE_DURATION, VITE_COST_TYPE_FARE } =
 export default function Isograph({ isographSettings }) {
   const [isographData, setIsographData] = useState(null);
   const [isographMapLayer, setIsographMapLayer] = useState(null);
-  const [tooltipValue, setTooltipValue] = useState("");
+  const [tooltipValue, setTooltipValue] = useState(null);
   const apiIsLoaded = useApiIsLoaded();
   const map = useMap();
 
@@ -115,7 +115,7 @@ export default function Isograph({ isographSettings }) {
     });
     mapLayer.addListener("mouseout", () => {
       setTooltipValue("");
-      mapLayer.revertStyle();
+      mapLayer.revertStyle(null);
     });
   }
 
@@ -158,7 +158,7 @@ export default function Isograph({ isographSettings }) {
   }, [isographData]);
 
   return (
-    tooltipValue.length > 0 && (
+    tooltipValue && (
       <Tooltip text={tooltipValue} mouseOffset={{ x: -15, y: -30 }} />
     )
   );
