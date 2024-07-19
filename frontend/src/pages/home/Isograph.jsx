@@ -9,7 +9,8 @@ const { VITE_EXPRESS_API, VITE_COST_TYPE_DURATION, VITE_COST_TYPE_FARE } =
 export default function Isograph({ isographSettings }) {
   const [isographData, setIsographData] = useState(null);
   const [isographMapLayer, setIsographMapLayer] = useState(null);
-  const [tooltipValue, setTooltipValue] = useState("");
+  const [tooltipValue, setTooltipValue] = useState(null);
+  const [mouseListeners, setMouseListeners] = useState(null);
   const apiIsLoaded = useApiIsLoaded();
   const map = useMap();
 
@@ -35,7 +36,7 @@ export default function Isograph({ isographSettings }) {
   function calculateContours(isographData) {
     const gridWidth = Math.sqrt(isographData.length);
 
-    const costs = isographData.map(([, , cost]) => cost);
+    const costs = isographData.map(([_lng, _lat, cost]) => cost);
     const contourGenerator = d3
       .contours()
       .size([gridWidth, gridWidth])
@@ -105,18 +106,28 @@ export default function Isograph({ isographSettings }) {
         zIndex: normalizedCost,
       };
     });
+  }
 
-    mapLayer.addListener("mouseover", (e) => {
-      setTooltipValue(e.feature.getProperty("displayCost"));
-      mapLayer.overrideStyle(e.feature, {
-        strokeColor: "white",
-        strokeWeight: 2,
-      });
-    });
-    mapLayer.addListener("mouseout", () => {
+  function addListeners(mapLayer) {
+    const mouseoverListenerIndentifier = mapLayer.addListener(
+      "mouseover",
+      (e) => {
+        setTooltipValue(e.feature.getProperty("displayCost"));
+        mapLayer.overrideStyle(e.feature, {
+          strokeColor: "white",
+          strokeWeight: 2,
+        });
+      }
+    );
+    const mouseoutListenerIdentifier = mapLayer.addListener("mouseout", () => {
       setTooltipValue("");
-      mapLayer.revertStyle();
+      mapLayer.revertStyle(null);
     });
+
+    setMouseListeners([
+      mouseoverListenerIndentifier,
+      mouseoutListenerIdentifier,
+    ]);
   }
 
   useEffect(() => {
@@ -145,12 +156,18 @@ export default function Isograph({ isographSettings }) {
     isographMapLayer.forEach((feature) => {
       isographMapLayer.remove(feature);
     });
+    // remove listeners
+    mouseListeners?.forEach((listener) => {
+      listener.remove();
+    });
+    setMouseListeners(null);
 
     try {
       const featureCollection = calculateContours(isographData);
 
       isographMapLayer.addGeoJson(featureCollection);
       addIsographStyling(isographMapLayer, featureCollection);
+      addListeners(isographMapLayer);
       isographMapLayer.setMap(map);
     } catch (error) {
       console.error(error.message);
@@ -158,7 +175,7 @@ export default function Isograph({ isographSettings }) {
   }, [isographData]);
 
   return (
-    tooltipValue.length > 0 && (
+    tooltipValue && (
       <Tooltip text={tooltipValue} mouseOffset={{ x: -15, y: -30 }} />
     )
   );
