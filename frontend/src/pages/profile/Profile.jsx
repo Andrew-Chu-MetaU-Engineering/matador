@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { TextInput, Paper, ActionIcon, List } from "@mantine/core";
+import { TextInput, Paper, ActionIcon } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
+import InterestItem from "./InterestItem";
 import "./Profile.css";
 
 function Profile({ userId }) {
@@ -29,8 +30,7 @@ function Profile({ userId }) {
     }
   }
 
-  async function addInterest() {
-    if (interests.includes(interestInput)) return;
+  async function editInterests(interests) {
     try {
       const response = await fetch(
         new URL(`user/${userId}/interests`, VITE_EXPRESS_API),
@@ -40,7 +40,7 @@ function Profile({ userId }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            interests: [...interests, interestInput],
+            interests: interests,
           }),
         }
       );
@@ -52,8 +52,19 @@ function Profile({ userId }) {
       fetchInterests();
       setInterestInput("");
     } catch (error) {
-      console.error("Error adding interest:", error);
+      console.error("Error editing interests:", error);
     }
+  }
+
+  async function addInterest() {
+    if (interests.includes(interestInput)) return;
+    await editInterests([...interests, interestInput]);
+  }
+
+  async function handleRemoveInterest(deletionInterest) {
+    await editInterests(
+      interests.filter((interest) => interest !== deletionInterest)
+    );
   }
 
   return (
@@ -81,11 +92,13 @@ function Profile({ userId }) {
         }
       />
 
-      <List spacing="xs" size="sm" center mt="md">
-        {interests?.map((interest) => (
-          <List.Item key={interest}>{interest}</List.Item>
-        ))}
-      </List>
+      {interests?.map((interest) => (
+        <InterestItem
+          key={interest}
+          interest={interest}
+          handleRemoveInterest={handleRemoveInterest}
+        />
+      ))}
     </Paper>
   );
 }
