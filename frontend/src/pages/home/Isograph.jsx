@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useMap, useApiIsLoaded } from "@vis.gl/react-google-maps";
 import * as d3 from "d3";
-const { VITE_EXPRESS_API } = import.meta.env;
+import Tooltip from "../../components/Tooltip";
+const { VITE_EXPRESS_API, VITE_COST_TYPE_DURATION, VITE_COST_TYPE_FARE } =
+  import.meta.env;
 
 export default function Isograph({ isographSettings }) {
   const [isographData, setIsographData] = useState(null);
   const [isographMapLayer, setIsographMapLayer] = useState(null);
+  const [tooltipValue, setTooltipValue] = useState("");
   const apiIsLoaded = useApiIsLoaded();
   const map = useMap();
 
@@ -57,14 +60,24 @@ export default function Isograph({ isographSettings }) {
 
     return {
       type: "FeatureCollection",
-      features: contours.map((contour) => ({
+      features: contours.map((contour, i) => ({
         type: "Feature",
         geometry: contour,
         properties: {
           value: contour.value,
+          displayCost: formatDisplayCost(i, contours),
         },
       })),
     };
+  }
+
+  function formatDisplayCost(i, contours) {
+    let displayCost =
+      i === contours.length - 1
+        ? `>${contours[i].value}`
+        : `<${contours[i + 1].value}`;
+
+    return displayCost;
   }
 
   function addIsographStyling(mapLayer, featureCollection) {
@@ -86,12 +99,14 @@ export default function Isograph({ isographSettings }) {
     });
 
     mapLayer.addListener("mouseover", (e) => {
+      setTooltipValue(e.feature.getProperty("displayCost"));
       mapLayer.overrideStyle(e.feature, {
         strokeColor: "white",
         strokeWeight: 2,
       });
     });
     mapLayer.addListener("mouseout", () => {
+      setTooltipValue("");
       mapLayer.revertStyle();
     });
   }
@@ -133,6 +148,12 @@ export default function Isograph({ isographSettings }) {
       console.error(error.message);
     }
   }, [isographData]);
+
+  return (
+    tooltipValue.length > 0 && (
+      <Tooltip text={tooltipValue} mouseOffset={{ x: -15, y: -30 }} />
+    )
+  );
 }
 
 Isograph.propTypes = {

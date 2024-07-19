@@ -62,13 +62,14 @@ async function fetchCosts(origin, samplePoints, costType, departureTime) {
     );
 
     if (costType === COST_TYPE_DURATION) {
-      parseCostFunction = fetchResultsUtils.parseDuration;
+      return routesData.map(
+        (route) => fetchResultsUtils.parseDuration(route) / 60
+      ); // convert to minutes
     } else if (costType === COST_TYPE_FARE) {
-      parseCostFunction = fetchResultsUtils.calculateFare;
+      return routesData.map((route) => fetchResultsUtils.calculateFare(route));
     } else {
       console.error(COST_TYPE_ERROR_MSG);
     }
-    return routesData.map((route) => parseCostFunction(route));
   } catch (error) {
     console.error(error.message);
   }
