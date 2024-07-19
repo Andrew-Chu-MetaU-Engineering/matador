@@ -72,10 +72,21 @@ export default function Isograph({ isographSettings }) {
   }
 
   function formatDisplayCost(i, contours) {
+    let prepend = "";
+    let append = "";
+    switch (isographSettings.costType) {
+      case VITE_COST_TYPE_DURATION:
+        append = " min";
+        break;
+      case VITE_COST_TYPE_FARE:
+        prepend = "$";
+        break;
+    }
+
     let displayCost =
       i === contours.length - 1
-        ? `>${contours[i].value}`
-        : `<${contours[i + 1].value}`;
+        ? `> ${prepend}${contours[i].value}${append}`
+        : `< ${prepend}${contours[i + 1].value}${append}`;
 
     return displayCost;
   }
