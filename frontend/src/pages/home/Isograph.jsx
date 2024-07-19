@@ -35,7 +35,7 @@ export default function Isograph({ isographSettings }) {
   function calculateContours(isographData) {
     const gridWidth = Math.sqrt(isographData.length);
 
-    const costs = isographData.map(([, , cost]) => cost);
+    const costs = isographData.map(([_lng, _lat, cost]) => cost);
     const contourGenerator = d3
       .contours()
       .size([gridWidth, gridWidth])
