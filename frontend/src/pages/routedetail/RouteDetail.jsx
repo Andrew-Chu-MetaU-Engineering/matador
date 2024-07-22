@@ -31,8 +31,8 @@ export default function RouteDetail() {
             Route to {place.displayName.text}
           </Text>
           <ScrollArea>
-            {legs?.map((leg) => {
-              return leg?.steps.map((step, i) => (
+            {legs.map((leg) => {
+              return leg.steps?.map((step, i) => (
                 <StepInfoPane key={i} step={step} />
               ));
             })}
