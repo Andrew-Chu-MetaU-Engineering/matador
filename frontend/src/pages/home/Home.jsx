@@ -4,7 +4,7 @@ import { Paper, Box, ScrollArea, Loader } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
 
-import TransitMap from "./TransitMap";
+import TransitMap from "../../components/TransitMap";
 import Search from "./Search";
 import SearchResult from "./SearchResult";
 import Isograph from "./Isograph";
