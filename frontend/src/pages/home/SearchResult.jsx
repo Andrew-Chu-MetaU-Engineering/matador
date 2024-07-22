@@ -1,11 +1,14 @@
 import PropTypes from "prop-types";
-import { Card, Text, Rating, Group } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
+import { Card, Text, Rating, Group, Button } from "@mantine/core";
 import { IconFlagFilled } from "@tabler/icons-react";
 import "./SearchResult.css";
 
 export default function SearchResult({ option, active, setActiveOption }) {
   const { place, route, extracted } = option;
   const durationMinutes = Math.round(extracted.duration / 60); // extracted.duration is in seconds
+  const navigate = useNavigate();
+
   return (
     <Card
       shadow="xs"
@@ -46,6 +49,17 @@ export default function SearchResult({ option, active, setActiveOption }) {
           )}
         </div>
       </div>
+      <Button
+        onClick={() => {
+          navigate("/routedetail", { state: { option: option } });
+        }}
+        variant="light"
+        fullWidth
+        mt="md"
+        radius="md"
+      >
+        See route details
+      </Button>
     </Card>
   );
 }

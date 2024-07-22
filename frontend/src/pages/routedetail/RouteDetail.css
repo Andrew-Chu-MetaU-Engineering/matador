@@ -1,0 +1,17 @@
+#route-detail-body {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+#route-map-area {
+  flex: 75%;
+}
+
+#detail-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 15%;
+  background-color: aliceblue;
+}
