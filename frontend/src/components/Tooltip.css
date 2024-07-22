@@ -2,6 +2,22 @@
   position: fixed;
   top: 0;
   left: 0;
+  width: 90px;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
   pointer-events: none;
-  background-color: white;
+  color: white;
+  background-color: red;
+}
+
+.mouse-tracker::after {
+  content: " "; /* add an arrow below tooltip */
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 7px;
+  border-style: solid;
+  border-color: red transparent transparent transparent;
 }
