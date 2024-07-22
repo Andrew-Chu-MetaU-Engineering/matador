@@ -1,0 +1,9 @@
+#detail-pane {
+  margin: 0 1rem 0.5rem 1rem;
+  padding: 1rem;
+  min-width: 21rem;
+}
+
+#instructions {
+  white-space: pre-line;
+}
