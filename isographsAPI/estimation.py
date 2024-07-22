@@ -41,8 +41,9 @@ def sample_polynomial(dimension_sample_count, lat, lng, powers_lat, powers_lng, 
             estimate_sample_lng.reshape(-1, 1) ** powers_lng)
     estimate_cost = np.dot(estimation_matrix, coefficients).reshape(estimate_sample_lat.shape)
 
-    # reshape into 3 columns of [lng, lat, cost]
-    return np.array([estimate_sample_lng, estimate_sample_lat, estimate_cost]).T.reshape(-1, 3)
+    # clip any negative cost estimates and reshape into 3 columns of [lng, lat, cost]
+    return (np.array([estimate_sample_lng, estimate_sample_lat, np.clip(estimate_cost, 0, None)])
+            .T.reshape(-1, 3))
 
 
 def format_data(data):

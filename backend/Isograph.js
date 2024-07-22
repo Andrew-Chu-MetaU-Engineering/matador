@@ -40,6 +40,7 @@ async function isograph(originAddress, costType, departureTime) {
       ])
     )
     .flat();
+  costSamples.push([...originCoordinates, 0]);
 
   const estimations = await isographUtils.fetchPolynomialEstimation(
     costSamples,
