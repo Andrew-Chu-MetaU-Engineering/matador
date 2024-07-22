@@ -176,7 +176,7 @@ export default function Isograph({ isographSettings }) {
 
   return (
     tooltipValue && (
-      <Tooltip text={tooltipValue} mouseOffset={{ x: -15, y: -30 }} />
+      <Tooltip text={tooltipValue} mouseOffset={{ x: -47, y: -41 }} />
     )
   );
 }
