@@ -1,5 +1,5 @@
 const fetchUtils = require("./FetchResultsUtils");
-const { MAX_FETCH_TRIES, BIAS } = process.env;
+const { MAX_FETCH_TRIES, BIAS, NEAR_INTEREST_THRESHOLD } = process.env;
 
 async function getTransformer() {
   TransformersApi = Function('return import("@xenova/transformers")')();
@@ -42,7 +42,6 @@ function cosineSimilarity(vecA, vecB) {
 
 // Find user interests that align with the user's query
 async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
-  const NEAR_INTEREST_THRESHOLD = 0.1;
   const interestEmbeddingPromises = interests.map((interest) =>
     getEmbedding(interest)
   );
