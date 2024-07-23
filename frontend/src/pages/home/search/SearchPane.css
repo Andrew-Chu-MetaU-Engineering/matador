@@ -1,0 +1,8 @@
+#results-loading-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+#results-scrollarea {
+  flex-grow: 1;
+}
