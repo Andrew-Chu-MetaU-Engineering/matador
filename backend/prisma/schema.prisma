@@ -8,6 +8,10 @@ datasource db {
 }
 
 model User {
-  id        String   @id
-  interests String[]
+  id               String   @id
+  interests        String[]
+  weightInterest   Float    @default(30.0)
+  weightPreference Float    @default(30.0)
+  weightTransit    Float    @default(40.0)
+  likedPlaces      String[]
 }
