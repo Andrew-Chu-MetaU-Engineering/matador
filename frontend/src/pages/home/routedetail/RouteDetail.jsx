@@ -11,8 +11,8 @@ export default function RouteDetail({ option, setIsRouteDetailDisplayed }) {
   } = option;
 
   function fadeIn(i) {
-    const DURATION = 1000;
-    const DELAY = 400;
+    const DURATION = 800; // values found through visual testing
+    const DELAY = 100;
     return `fade-in ${DURATION}ms ease-in ${DELAY * i}ms forwards`;
   }
 
