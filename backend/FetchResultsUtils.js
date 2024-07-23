@@ -13,6 +13,49 @@ const PLACES_ACCESSIBILITY_FIELDS = [
   "wheelchairAccessibleSeating",
 ];
 
+async function getOptions(
+  searchQuery,
+  originAddress,
+  locationBias,
+  departureTime,
+  numRequests,
+  isFirstRequest,
+  nextPageToken = null
+) {
+  const { places, nextPageToken: newNextPageToken } = await fetchPlaces(
+    searchQuery,
+    locationBias,
+    numRequests,
+    isFirstRequest,
+    nextPageToken
+  );
+
+  if (places?.length == 0) {
+    return { options: [], nextPageToken: null };
+  }
+
+  const routesData = await fetchRouteMatrix(
+    originAddress,
+    places.map((place) => place.formattedAddress),
+    departureTime
+  );
+
+  const options = places.map((place, i) => {
+    const route = routesData[i];
+    return {
+      place: place,
+      extracted: {
+        priceLevel: parsePriceLevel(place),
+        accessibilityScore: parseAccessibility(place),
+        fare: calculateFare(route),
+        duration: parseDuration(route),
+      },
+    };
+  });
+
+  return { options: options, nextPageToken: newNextPageToken };
+}
+
 async function fetchRoute(originAddress, destinationAddress, departureTime) {
   // computes route from origin to destination and their related transit fares and durations
   try {
@@ -178,49 +221,6 @@ async function fetchPlaces(
   }
 }
 
-async function getOptions(
-  searchQuery,
-  originAddress,
-  locationBias,
-  departureTime,
-  numRequests,
-  isFirstRequest,
-  nextPageToken = null
-) {
-  const { places, nextPageToken: newNextPageToken } = await fetchPlaces(
-    searchQuery,
-    locationBias,
-    numRequests,
-    isFirstRequest,
-    nextPageToken
-  );
-
-  if (places?.length == 0) {
-    return { options: [], nextPageToken: null };
-  }
-
-  const routesData = await fetchRouteMatrix(
-    originAddress,
-    places.map((place) => place.formattedAddress),
-    departureTime
-  );
-
-  const options = places.map((place, i) => {
-    const route = routesData[i];
-    return {
-      place: place,
-      extracted: {
-        priceLevel: parsePriceLevel(place),
-        accessibilityScore: parseAccessibility(place),
-        fare: calculateFare(route),
-        duration: parseDuration(route),
-      },
-    };
-  });
-
-  return { options: options, nextPageToken: newNextPageToken };
-}
-
 function parsePriceLevel(place) {
   if (place?.priceLevel == null) {
     return 0;
@@ -262,10 +262,10 @@ function calculateFare(route) {
 }
 
 module.exports = {
+  getOptions,
   fetchRoute,
   fetchRouteMatrix,
   fetchPlaces,
-  getOptions,
   parseDuration,
   calculateFare,
 };

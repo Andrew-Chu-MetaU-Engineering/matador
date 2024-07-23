@@ -53,58 +53,6 @@ async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   );
 }
 
-function constructTimePoint(point, utcOffsetMinutes) {
-  const { hour, minute, date } = point;
-  let time = new Date(
-    Date.UTC(date.year, date.month - 1, date.day, hour, minute)
-  );
-  time.setMinutes(time.getMinutes() + utcOffsetMinutes);
-  return time;
-}
-
-function isOpenOnArrival(
-  departureTime,
-  transitDuration,
-  openingHours,
-  utcOffsetMinutes
-) {
-  // incomplete hours data should not hurt recommendation rankings
-  if (openingHours?.periods?.length < 7) {
-    // check if >=1 day of the week has missing hours data
-    return true;
-  }
-  let arrivalTime = new Date(departureTime);
-  arrivalTime.setSeconds(arrivalTime.getSeconds() + transitDuration);
-
-  let { open, close } = openingHours.periods[arrivalTime.getDay()];
-  return (
-    constructTimePoint(open, utcOffsetMinutes) <
-    arrivalTime <
-    constructTimePoint(close, utcOffsetMinutes)
-  );
-}
-
-function isFeasible(option, settings) {
-  const {
-    place: { rating, currentOpeningHours, utcOffsetMinutes },
-    extracted: { fare, duration, priceLevel },
-  } = option;
-  const { departureTime, preferredFare, preferredDuration, budget, minRating } =
-    settings;
-  return !(
-    (preferredFare.isStrong && fare > preferredFare.fare) ||
-    (preferredDuration.isStrong && duration > preferredDuration.duration) ||
-    priceLevel > budget ||
-    rating < minRating ||
-    !isOpenOnArrival(
-      departureTime,
-      duration,
-      currentOpeningHours,
-      utcOffsetMinutes
-    )
-  );
-}
-
 async function fetchRecommendations(numRecommendations, settings, query) {
   let tries = 0;
   let nextPageToken = null;
@@ -143,6 +91,58 @@ async function fetchRecommendations(numRecommendations, settings, query) {
     settings.departureTime
   );
   return options;
+}
+
+function isFeasible(option, settings) {
+  const {
+    place: { rating, currentOpeningHours, utcOffsetMinutes },
+    extracted: { fare, duration, priceLevel },
+  } = option;
+  const { departureTime, preferredFare, preferredDuration, budget, minRating } =
+    settings;
+  return !(
+    (preferredFare.isStrong && fare > preferredFare.fare) ||
+    (preferredDuration.isStrong && duration > preferredDuration.duration) ||
+    priceLevel > budget ||
+    rating < minRating ||
+    !isOpenOnArrival(
+      departureTime,
+      duration,
+      currentOpeningHours,
+      utcOffsetMinutes
+    )
+  );
+}
+
+function isOpenOnArrival(
+  departureTime,
+  transitDuration,
+  openingHours,
+  utcOffsetMinutes
+) {
+  // incomplete hours data should not hurt recommendation rankings
+  if (openingHours?.periods?.length < 7) {
+    // check if >=1 day of the week has missing hours data
+    return true;
+  }
+  let arrivalTime = new Date(departureTime);
+  arrivalTime.setSeconds(arrivalTime.getSeconds() + transitDuration);
+
+  let { open, close } = openingHours.periods[arrivalTime.getDay()];
+  return (
+    constructTimePoint(open, utcOffsetMinutes) <
+    arrivalTime <
+    constructTimePoint(close, utcOffsetMinutes)
+  );
+}
+
+function constructTimePoint(point, utcOffsetMinutes) {
+  const { hour, minute, date } = point;
+  let time = new Date(
+    Date.UTC(date.year, date.month - 1, date.day, hour, minute)
+  );
+  time.setMinutes(time.getMinutes() + utcOffsetMinutes);
+  return time;
 }
 
 async function insertRouteDetails(options, originAddress, departureTime) {
