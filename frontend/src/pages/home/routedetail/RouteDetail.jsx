@@ -1,42 +1,55 @@
-import { useLocation } from "react-router-dom";
-import { Box, Paper, ScrollArea, Text } from "@mantine/core";
+import PropTypes from "prop-types";
+import { Button, Paper, ScrollArea, Text } from "@mantine/core";
+import { IconArrowBack } from "@tabler/icons-react";
 import StepInfoPane from "./StepInfoPane";
 import "./RouteDetail.css";
 
-export default function RouteDetail() {
+export default function RouteDetail({ option, setIsRouteDetailDisplayed }) {
   const {
     place,
-    route: { viewport, polyline, legs },
-  } = useLocation().state.option;
+    route: { legs },
+  } = option;
+
+  function fadeIn(i) {
+    const DURATION = 1000;
+    const DELAY = 400;
+    return `fade-in ${DURATION}ms ease-in ${DELAY * i}ms forwards`;
+  }
 
   return (
-    <Paper>
-      <HomeButton />
-      <Paper id="route-detail-body">
-        <Box id="route-map-area">
-          <TransitMap
-            encodedPath={polyline.encodedPolyline}
-            focusBounds={{
-              north: viewport.high.latitude,
-              east: viewport.high.longitude,
-              south: viewport.low.latitude,
-              west: viewport.low.longitude,
-            }}
-          />
-        </Box>
-        <Paper id="detail-panel" shadow="xs" radius="md">
-          <Text size="lg" fw={800} ta="center" m="sm">
-            Route to {place.displayName.text}
-          </Text>
-          <ScrollArea>
-            {legs.map((leg) => {
-              return leg.steps?.map((step, i) => (
-                <StepInfoPane key={i} step={step} />
-              ));
-            })}
-          </ScrollArea>
-        </Paper>
-      </Paper>
+    <Paper id="detail-panel">
+      <section>
+        <Button
+          onClick={() => setIsRouteDetailDisplayed(false)}
+          leftSection={<IconArrowBack />}
+          m="lg"
+          variant="outline"
+          radius="lg"
+        >
+          Back
+        </Button>
+      </section>
+      <Text size="lg" fw={800} ta="center" m="sm">
+        Route to {place.displayName.text}
+      </Text>
+      <ScrollArea scrollbars="y">
+        {legs.map((leg) => {
+          return leg.steps?.map((step, i) => (
+            <article
+              className="fade-animation-wrapper"
+              key={i}
+              style={{ animation: fadeIn(i) }}
+            >
+              <StepInfoPane step={step} />
+            </article>
+          ));
+        })}
+      </ScrollArea>
     </Paper>
   );
 }
+
+RouteDetail.propTypes = {
+  option: PropTypes.object.isRequired,
+  setIsRouteDetailDisplayed: PropTypes.func.isRequired,
+};
