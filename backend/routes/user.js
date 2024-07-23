@@ -58,7 +58,7 @@ router.get("/:id/interests", async (req, res) => {
 
 // Edit a user's interests
 router.put("/:id/interests", async (req, res) => {
-  const user = await prisma.user.update({
+  const interests = await prisma.user.update({
     where: {
       id: req.params.id,
     },
@@ -66,7 +66,59 @@ router.put("/:id/interests", async (req, res) => {
       interests: req.body.interests,
     },
   });
-  res.status(204).json(user);
+  res.status(204).json(interests);
+});
+
+router.get("/:id/weights", async (req, res) => {
+  const weights = await prisma.user.findUnique({
+    where: {
+      id: req.params.id,
+    },
+    select: {
+      weightInterest: true,
+      weightPreference: true,
+      weightTransit: true,
+    },
+  });
+  res.status(200).json(weights);
+});
+
+router.put("/:id/weights", async (req, res) => {
+  const weights = await prisma.user.update({
+    where: {
+      id: req.params.id,
+    },
+    data: {
+      weightInterest: req.body.weightInterest,
+      weightPreference: req.body.weightPreference,
+      weightTransit: req.body.weightTransit,
+    },
+  });
+  res.status(204).json(weights);
+});
+
+router.get("/:id/likes", async (req, res) => {
+  const likedPlaces = await prisma.user.findUnique({
+    where: {
+      id: req.params.id,
+    },
+    select: {
+      likedPlaces: true,
+    },
+  });
+  res.status(200).json(likedPlaces);
+});
+
+router.put("/:id/likes", async (req, res) => {
+  const likedPlaces = await prisma.user.update({
+    where: {
+      id: req.params.id,
+    },
+    data: {
+      likedPlaces: req.body.likedPlaces,
+    },
+  });
+  res.status(204).json(likedPlaces);
 });
 
 module.exports = { router, getUser };
