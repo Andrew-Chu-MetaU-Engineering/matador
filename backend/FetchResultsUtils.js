@@ -13,6 +13,12 @@ const PLACES_ACCESSIBILITY_FIELDS = [
   "wheelchairAccessibleSeating",
 ];
 
+/**
+ * Get a list of potential recommendations based on the user's query and settings
+ * @returns An object with options, a list of places based on the user's
+ *  query and location bias and their corresponding route fare/durations,
+ *  and nextPageToken, which allows for refetching if certain options are not deemed feasible.
+ */
 async function getOptions(
   searchQuery,
   originAddress,
@@ -56,8 +62,11 @@ async function getOptions(
   return { options: options, nextPageToken: newNextPageToken };
 }
 
+/**
+ * Computes route from origin to destination
+ * and its shape, navigation steps, and viewport boundaries for display
+ */
 async function fetchRoute(originAddress, destinationAddress, departureTime) {
-  // computes route from origin to destination and their related transit fares and durations
   try {
     const FIELDS = ["routes.polyline", "routes.legs", "routes.viewport"];
 
@@ -90,13 +99,18 @@ async function fetchRoute(originAddress, destinationAddress, departureTime) {
   }
 }
 
+/**
+ * Computes routes from one origin to multiple destinations
+ *  and their related transit fares and durations
+ * @returns Transit fares and durations for each route in the same order
+ *  as the elements in the input destinations array
+ */
 async function fetchRouteMatrix(
   origin,
   destinations,
   departureTime,
   useCoordinates = false
 ) {
-  // computes route from origin to destination and their related transit fares and durations
   try {
     const FIELDS = [
       "destinationIndex",
@@ -161,6 +175,10 @@ async function fetchRouteMatrix(
   }
 }
 
+/**
+ * Retrieves attribute information on places of interest matching query text,
+ *  with a bias toward a geographical area specified in locationBiasRect
+ */
 async function fetchPlaces(
   searchQuery,
   locationBiasRect,
@@ -168,7 +186,6 @@ async function fetchPlaces(
   isFirstRequest,
   nextPageToken = null
 ) {
-  // retrieves locations matching query text, with a bias toward a geographical radius
   try {
     const FIELDS = [
       "nextPageToken",

@@ -8,6 +8,7 @@ const {
   MAX_POSSIBLE_RATING,
 } = process.env;
 
+// Use user interest, preference, and quality of transit to recommend places of interest
 async function recommend(query, interests, settings) {
   const options = await recommendUtils.fetchRecommendations(
     NUM_RECOMMENDATIONS,
@@ -49,6 +50,7 @@ async function calculateInterestScores(query, interests, options) {
     getEmbedding
   );
 
+  // enhance the query using similar interests from the user profile
   const adjustedQueryEmbedding = await getEmbedding(
     [query, ...alignedInterests].join()
   );
@@ -74,6 +76,7 @@ async function calculateInterestScores(query, interests, options) {
   return recommendUtils.normalizeScores(interestScores);
 }
 
+// Compare user preferences with the attributes of a location using cosine similarity
 function calculatePreferenceScores(settings, options) {
   const {
     budget,
@@ -109,8 +112,9 @@ function calculatePreferenceScores(settings, options) {
   return recommendUtils.normalizeScores(preferenceScores);
 }
 
+// Compare transit fare and duration using a converstion to monetary value
 function calculateTransitScores(options) {
-  const VALUE_OF_SECOND = 28 / (60 * 60); // $28 per hour
+  const VALUE_OF_SECOND = 28 / (60 * 60); // $28 per hour (average US income)
 
   const transitScores = new Map();
   for (const option of options) {

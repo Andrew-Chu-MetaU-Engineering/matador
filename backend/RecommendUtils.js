@@ -40,6 +40,7 @@ function cosineSimilarity(vecA, vecB) {
   );
 }
 
+// Find user interests that align with the user's query
 async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   const NEAR_INTEREST_THRESHOLD = 0.1;
   const interestEmbeddingPromises = interests.map((interest) =>
@@ -53,6 +54,7 @@ async function getAlignedInterests(queryEmbedding, interests, getEmbedding) {
   );
 }
 
+// Fetch a list of possible recommendations, with refetch logic if options are not feasible.
 async function fetchRecommendations(numRecommendations, settings, query) {
   let tries = 0;
   let nextPageToken = null;
@@ -93,6 +95,10 @@ async function fetchRecommendations(numRecommendations, settings, query) {
   return options;
 }
 
+/**
+ * Check whether the option is acceptable given the user's preferences
+ *  and the location's opening hours when the user will arrive
+ */
 function isFeasible(option, settings) {
   const {
     place: { rating, currentOpeningHours, utcOffsetMinutes },
@@ -114,6 +120,7 @@ function isFeasible(option, settings) {
   );
 }
 
+// Check if a location is open when the user arrives using public transit
 function isOpenOnArrival(
   departureTime,
   transitDuration,
@@ -145,6 +152,10 @@ function constructTimePoint(point, utcOffsetMinutes) {
   return time;
 }
 
+/**
+ * Concurrently insert route shape, navigation steps, and viewport
+ * display bound information into each option
+ */
 async function insertRouteDetails(options, originAddress, departureTime) {
   let routePromises = options.map((option) =>
     fetchUtils.fetchRoute(
@@ -157,11 +168,13 @@ async function insertRouteDetails(options, originAddress, departureTime) {
   options.forEach((option, i) => (option.route = routes[i].routes[0]));
 }
 
+// Suggest slightly better options than the preferences specified by user
 function biasPreference(value, isDownward) {
   // takes input values in [0, 1]
   return isDownward ? value ** (1 / BIAS) : value ** BIAS;
 }
 
+// Normalize all scores between [0, 1]
 function normalizeScores(scoresMap) {
   const scores = [...scoresMap.values()];
   const maxScore = Math.max(...scores);

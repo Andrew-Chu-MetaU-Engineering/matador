@@ -8,6 +8,7 @@ const {
   ISOGRAPHS_API,
 } = process.env;
 
+// Convert a plain text address to a coordinate, for use in isograph sampling
 async function geocode(originAddress) {
   try {
     let request = new URL(GEOCODING_ENDPOINT);
@@ -31,6 +32,10 @@ async function geocode(originAddress) {
   }
 }
 
+/**
+ * Given an origin coordinate, a distance in meters, and a direction
+ *  in degrees from north, find the corresponding coordinate point
+ */
 function findCoordinate(origin, distance, direction) {
   const EARTH_RADIUS = 6371000; // meters
   const METERS_PER_DEGREE = EARTH_RADIUS * (Math.PI / 180);
@@ -50,6 +55,26 @@ function findCoordinate(origin, distance, direction) {
 
 function toRadians(degrees) {
   return degrees * (Math.PI / 180);
+}
+
+/**
+ * Fetches and inserts costs into sampleInfo from Google RouteMatrix
+ * between origin and destination coordinates concurrently
+ */
+async function insertSampleCosts(sampleInfo, origin, costType, departureTime) {
+  const costs = await Promise.all(
+    sampleInfo.map((directionalSamples) =>
+      fetchCosts(
+        origin,
+        directionalSamples.coordinates,
+        costType,
+        departureTime
+      )
+    )
+  );
+  sampleInfo.forEach((sampleDirection, i) => {
+    sampleDirection.costs = costs[i];
+  });
 }
 
 async function fetchCosts(origin, samplePoints, costType, departureTime) {
@@ -75,22 +100,7 @@ async function fetchCosts(origin, samplePoints, costType, departureTime) {
   }
 }
 
-async function insertSampleCosts(sampleInfo, origin, costType, departureTime) {
-  const costs = await Promise.all(
-    sampleInfo.map((directionalSamples) =>
-      fetchCosts(
-        origin,
-        directionalSamples.coordinates,
-        costType,
-        departureTime
-      )
-    )
-  );
-  sampleInfo.forEach((sampleDirection, i) => {
-    sampleDirection.costs = costs[i];
-  });
-}
-
+// Fetch points from the polynomial regression, fitted using the cost samples
 async function fetchPolynomialEstimation(
   costSamples,
   order,
