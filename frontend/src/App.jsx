@@ -11,7 +11,6 @@ import Authentication from "./pages/authentication/Authentication";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Profile from "./pages/profile/Profile";
-import RouteDetail from "./pages/routedetail/RouteDetail";
 
 function App() {
   const [userId, setUserId] = useState(null);
@@ -34,7 +33,6 @@ function App() {
           <Route path="/" element={<Home userId={userId} />} />
           <Route path="/authenticate" element={<Authentication />} />
           <Route path="/profile" element={<Profile userId={userId} />} />
-          <Route path="/routedetail" element={<RouteDetail />} />
         </Routes>
         <Footer />
       </Router>

@@ -1,0 +1,15 @@
+.detail-pane {
+  margin: 0 0rem 0.5rem 0rem;
+  padding: 1rem;
+  min-width: 21rem;
+  border-radius: 20px;
+}
+
+.detail-pane:hover {
+  transition: padding 0.5s ease-in-out 0.5s;
+  padding: 2rem 1rem;
+}
+
+.instructions {
+  white-space: pre-line;
+}

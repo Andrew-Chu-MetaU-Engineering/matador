@@ -2,12 +2,7 @@ import PropTypes from "prop-types";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import { Polyline } from "./Polyline";
 
-export default function TransitMap({
-  encodedPath,
-  setMapBounds,
-  focusBounds,
-  children,
-}) {
+export default function TransitMap({ encodedPath, setMapBounds, children }) {
   const { VITE_GOOGLE_API_KEY, VITE_DEFAULT_BOUNDS, VITE_MAP_ID } = import.meta
     .env;
 
@@ -16,9 +11,7 @@ export default function TransitMap({
       <Map
         mapId={VITE_MAP_ID}
         reuseMaps={true}
-        defaultBounds={
-          focusBounds == null ? JSON.parse(VITE_DEFAULT_BOUNDS) : focusBounds
-        }
+        defaultBounds={JSON.parse(VITE_DEFAULT_BOUNDS)}
         gestureHandling={"cooperative"}
         disableDefaultUI={true}
         onBoundsChanged={(e) => {

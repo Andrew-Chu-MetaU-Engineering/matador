@@ -4,11 +4,15 @@ import "./StepInfoPane.css";
 
 export default function StepInfoPane({ step }) {
   const { navigationInstruction, localizedValues } = step;
+
   return (
-    <Paper id="detail-pane">
-      <Text id="instructions" fw={600}>{navigationInstruction.instructions}</Text>
+    <Paper className="detail-pane">
+      <Text className="instructions" fw={600}>
+        {navigationInstruction.instructions}
+      </Text>
       <Text size="sm">
-        {localizedValues.distance.text} &middot; {localizedValues.staticDuration.text}
+        {localizedValues.distance.text} &middot;{" "}
+        {localizedValues.staticDuration.text}
       </Text>
     </Paper>
   );
