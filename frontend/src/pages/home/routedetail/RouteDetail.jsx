@@ -1,8 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { Box, Paper, ScrollArea, Text } from "@mantine/core";
 import StepInfoPane from "./StepInfoPane";
-import TransitMap from "../../components/TransitMap";
-import HomeButton from "../../components/HomeButton";
 import "./RouteDetail.css";
 
 export default function RouteDetail() {
