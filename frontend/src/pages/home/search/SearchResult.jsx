@@ -1,13 +1,16 @@
 import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
 import { Card, Text, Rating, Group, Button } from "@mantine/core";
 import { IconFlagFilled } from "@tabler/icons-react";
 import "./SearchResult.css";
 
-export default function SearchResult({ option, active, setActiveOption }) {
-  const { place, route, extracted } = option;
+export default function SearchResult({
+  option,
+  activeOption,
+  setActiveOption,
+  setIsRouteDetailDisplayed,
+}) {
+  const { place, extracted } = option;
   const durationMinutes = Math.round(extracted.duration / 60); // extracted.duration is in seconds
-  const navigate = useNavigate();
 
   return (
     <Card
@@ -15,16 +18,18 @@ export default function SearchResult({ option, active, setActiveOption }) {
       padding="md"
       radius="md"
       mb="xs"
-      onClick={() =>
-        setActiveOption({
-          id: place.id,
-          route: route?.polyline?.encodedPolyline,
-        })
-      }
+      onClick={() => {
+        if (activeOption?.place.id !== option?.place.id) {
+          setActiveOption(option);
+          setIsRouteDetailDisplayed(false);
+        }
+      }}
     >
       <Group justify="space-between">
         <Text size="lg">{place.displayName.text}</Text>
-        {active && <IconFlagFilled id="result-flag-icon" />}
+        {activeOption?.place.id === option?.place.id && (
+          <IconFlagFilled id="result-flag-icon" />
+        )}
       </Group>
       <div id="place-properties">
         <Text size="md" c="dimmed" truncate="end">
@@ -51,7 +56,7 @@ export default function SearchResult({ option, active, setActiveOption }) {
       </div>
       <Button
         onClick={() => {
-          navigate("/routedetail", { state: { option: option } });
+          setIsRouteDetailDisplayed(true);
         }}
         variant="light"
         fullWidth
@@ -66,6 +71,7 @@ export default function SearchResult({ option, active, setActiveOption }) {
 
 SearchResult.propTypes = {
   option: PropTypes.object.isRequired,
-  active: PropTypes.bool.isRequired,
+  activeOption: PropTypes.object,
   setActiveOption: PropTypes.func.isRequired,
+  setIsRouteDetailDisplayed: PropTypes.func.isRequired,
 };

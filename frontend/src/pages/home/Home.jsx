@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Paper, Box, ScrollArea, Loader } from "@mantine/core";
+import { Paper, Box } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
 
@@ -23,6 +23,7 @@ export default function Home({ userId }) {
     costType: "",
     departureTime: "",
   });
+  const [isRouteDetailDisplayed, setIsRouteDetailDisplayed] = useState(null);
 
   useEffect(() => {
     if (userId != null) fetchProfile(userId);
@@ -164,32 +165,29 @@ export default function Home({ userId }) {
   return (
     <>
       <Paper id="home-body">
-        <section id="search-panel">
-          <Search form={form} handleFormSubmit={handleFormSubmit} />
-          {isResultsLoading && (
-            <div id="results-loading-wrapper">
-              <Loader color="blue" size="xl" type="dots" />
-            </div>
+        <section id="home-panel">
+          {isRouteDetailDisplayed ? (
+            <RouteDetail
+              option={activeOption}
+              setIsRouteDetailDisplayed={setIsRouteDetailDisplayed}
+            />
+          ) : (
+            <SearchPane
+              form={form}
+              handleFormSubmit={handleFormSubmit}
+              options={options}
+              isResultsLoading={isResultsLoading}
+              noResultsFound={noResultsFound}
+              activeOption={activeOption}
+              setActiveOption={setActiveOption}
+              setIsRouteDetailDisplayed={setIsRouteDetailDisplayed}
+            />
           )}
-          <ScrollArea id="results-scrollarea">
-            {options?.length > 0 &&
-              options.map((option) => (
-                <SearchResult
-                  key={option.place.id}
-                  option={option}
-                  active={activeOption?.id === option.place.id}
-                  setActiveOption={setActiveOption}
-                />
-              ))}
-            {noResultsFound && (
-              <p>No results found. Please try a different search.</p>
-            )}
-          </ScrollArea>
         </section>
         <Box id="map-area">
           <TransitMap
             id="google-map"
-            encodedPath={activeOption?.route}
+            encodedPath={activeOption?.route.polyline.encodedPolyline}
             setMapBounds={setMapBounds}
           >
             <Isograph isographSettings={isographSettings} />
