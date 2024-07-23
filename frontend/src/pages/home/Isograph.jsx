@@ -14,6 +14,58 @@ export default function Isograph({ isographSettings }) {
   const apiIsLoaded = useApiIsLoaded();
   const map = useMap();
 
+  // Initialize Google Maps data layer and fetch isograph data
+  useEffect(() => {
+    if (apiIsLoaded == null || map == null || isographSettings == null) {
+      return;
+    } else if (isographMapLayer == null) {
+      setIsographMapLayer(new google.maps.Data());
+    }
+
+    const { originAddress, costType, departureTime } = isographSettings;
+    if (
+      originAddress.length === 0 ||
+      costType.length === 0 ||
+      departureTime.length === 0
+    ) {
+      return;
+    } else {
+      fetchIsographData(originAddress, costType, departureTime);
+    }
+  }, [isographSettings, apiIsLoaded, map]);
+
+  // Calculate contour shapes and attach to map with stylin
+  useEffect(() => {
+    if (isographData == null) return;
+
+    // reset data layer
+    isographMapLayer.forEach((feature) => {
+      isographMapLayer.remove(feature);
+    });
+    // remove listeners
+    mouseListeners?.forEach((listener) => {
+      listener.remove();
+    });
+    setMouseListeners(null);
+
+    try {
+      const featureCollection = calculateContours(isographData);
+
+      isographMapLayer.addGeoJson(featureCollection);
+      addIsographStyling(isographMapLayer, featureCollection);
+      addListeners(isographMapLayer);
+      isographMapLayer.setMap(map);
+    } catch (error) {
+      console.error(error.message);
+    }
+  }, [isographData]);
+
+  return (
+    tooltipValue && (
+      <Tooltip text={tooltipValue} mouseOffset={{ x: -47, y: -41 }} />  // offset values found through manual testing
+    )
+  );
+
   async function fetchIsographData(originAddress, costType, departureTime) {
     try {
       let url = new URL("isograph", VITE_EXPRESS_API);
@@ -46,6 +98,7 @@ export default function Isograph({ isographSettings }) {
       (contour) => contour.value >= 0
     );
 
+    // Scale and transform the contour points to match geographic coordinates
     const [originLng, originLat] = isographData[0];
     const [diagonalLng, diagonalLat] = isographData[gridWidth + 1]; // the point with one increment in each x/y direction in the grid
     for (const contour of contours) {
@@ -129,56 +182,6 @@ export default function Isograph({ isographSettings }) {
       mouseoutListenerIdentifier,
     ]);
   }
-
-  useEffect(() => {
-    if (apiIsLoaded == null || map == null || isographSettings == null) {
-      return;
-    } else if (isographMapLayer == null) {
-      setIsographMapLayer(new google.maps.Data());
-    }
-
-    const { originAddress, costType, departureTime } = isographSettings;
-    if (
-      originAddress.length === 0 ||
-      costType.length === 0 ||
-      departureTime.length === 0
-    ) {
-      return;
-    } else {
-      fetchIsographData(originAddress, costType, departureTime);
-    }
-  }, [isographSettings, apiIsLoaded, map]);
-
-  useEffect(() => {
-    if (isographData == null) return;
-
-    // reset data layer
-    isographMapLayer.forEach((feature) => {
-      isographMapLayer.remove(feature);
-    });
-    // remove listeners
-    mouseListeners?.forEach((listener) => {
-      listener.remove();
-    });
-    setMouseListeners(null);
-
-    try {
-      const featureCollection = calculateContours(isographData);
-
-      isographMapLayer.addGeoJson(featureCollection);
-      addIsographStyling(isographMapLayer, featureCollection);
-      addListeners(isographMapLayer);
-      isographMapLayer.setMap(map);
-    } catch (error) {
-      console.error(error.message);
-    }
-  }, [isographData]);
-
-  return (
-    tooltipValue && (
-      <Tooltip text={tooltipValue} mouseOffset={{ x: -47, y: -41 }} />
-    )
-  );
 }
 
 Isograph.propTypes = {

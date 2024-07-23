@@ -11,9 +11,16 @@ const SAMPLING_DISTANCES = Array.from(
   (v, i) => STEP_SIZE * (i + 1)
 );
 
+/**
+ * Samples the cost (fare or duration) to get to coordinates around the origin address,
+ *  then fetches points from polynomial regression model fitted to the cost 
+ *  samples from a FastAPI server.
+ * Any points in the polynomial regression model that are negative are clipped to 0.
+ */
 async function isograph(originAddress, costType, departureTime) {
   const originCoordinates = await isographUtils.geocode(originAddress);
 
+  // Each element of sampleInfo holds sample points for a single radial direction
   let sampleInfo = Array.from({ length: NUM_DIRECTIONS }, (v, i) => {
     const direction = (360 / NUM_DIRECTIONS) * i;
     return {
@@ -40,7 +47,7 @@ async function isograph(originAddress, costType, departureTime) {
       ])
     )
     .flat();
-  costSamples.push([...originCoordinates, 0]);
+  costSamples.push([...originCoordinates, 0]); // add the origin as a sample of cost 0
 
   const estimations = await isographUtils.fetchPolynomialEstimation(
     costSamples,

@@ -20,7 +20,6 @@ async function getUser(id) {
 
 router.get("/:id", async (req, res) => {
   // creates a user with given id if not found, otherwise gets user
-  // for use in conjunction with login page
   const user = await prisma.user.upsert({
     where: { id: req.params.id },
     update: {},
@@ -57,6 +56,7 @@ router.get("/:id/interests", async (req, res) => {
   res.status(200).json(interests);
 });
 
+// Edit a user's interests
 router.put("/:id/interests", async (req, res) => {
   const user = await prisma.user.update({
     where: {
