@@ -14,13 +14,12 @@ function calculateNewWeights(
 ) {
   if (likedOptionIndex >= optionScores.length) return currentWeights;
 
-  // TODO handle isUnlike condition completely
-
-  const likeError = calculateError(optionScores, likedOptionIndex, isUnlike);
+  let likeError = calculateError(optionScores, likedOptionIndex, isUnlike);
+  if (isUnlike) likeError = likeError.map((val) => -val);
   return calculateAdjustedWeights(likeError, currentWeights);
 }
 
-function calculateError(optionScores, likedOptionIndex, isUnlike) {
+function calculateError(optionScores, likedOptionIndex) {
   const error = [0, 0, 0];
   const likedOption = optionScores[likedOptionIndex];
   optionScores.forEach((option, rank) => {
@@ -28,9 +27,8 @@ function calculateError(optionScores, likedOptionIndex, isUnlike) {
       const likedScoreDiff = likedOption[scoreTypeIdx] - score;
       // focus on items that are out of the expected order
       if (
-        isUnlike !== // "out-of-order" condition inverts when isUnlike
-        ((likedScoreDiff > 0 && likedOptionIndex > rank) ||
-          (likedScoreDiff < 0 && likedOptionIndex < rank))
+        (likedScoreDiff > 0 && likedOptionIndex > rank) ||
+        (likedScoreDiff < 0 && likedOptionIndex < rank)
       ) {
         // squared error of score, weighted by difference in rank
         error[scoreTypeIdx] += (likedOptionIndex - rank) * likedScoreDiff ** 2;
