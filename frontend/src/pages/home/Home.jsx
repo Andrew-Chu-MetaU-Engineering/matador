@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Paper, Box } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { AdvancedMarker } from "@vis.gl/react-google-maps";
 import dayjs from "dayjs";
 
 import SearchPane from "./search/SearchPane";
@@ -190,6 +191,18 @@ export default function Home({ userId }) {
             encodedPath={activeOption?.route.polyline.encodedPolyline}
             setMapBounds={setMapBounds}
           >
+            {options?.map((option) => {
+              const {
+                id,
+                location: { longitude, latitude },
+              } = option.place;
+              return (
+                <AdvancedMarker
+                  key={id}
+                  position={{ lat: latitude, lng: longitude }}
+                />
+              );
+            })}
             <Isograph isographSettings={isographSettings} />
           </TransitMap>
         </Box>
