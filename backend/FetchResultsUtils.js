@@ -193,6 +193,7 @@ async function fetchPlaces(
       "places.displayName.text",
       "places.types",
       "places.formattedAddress",
+      "places.location",
       "places.rating",
       "places.priceLevel",
       "places.currentOpeningHours.periods",
