@@ -18,14 +18,30 @@ async function recommend(query, interests, settings, weights) {
   const preferenceScores = calculatePreferenceScores(settings, options);
   const transitScores = calculateTransitScores(options);
 
+  options.forEach((option) => {
+    const id = option.place.id;
+    option.scores = {
+      interest: interestScores.get(id),
+      preference: preferenceScores.get(id),
+      transit: transitScores.get(id),
+    };
+  });
+
   const combinedScoresComparator = (a, b) => {
-    const aId = a.place.id;
-    const bId = b.place.id;
+    const {
+      interest: aInterest,
+      preference: aPreference,
+      transit: aTransit,
+    } = a.scores;
+    const {
+      interest: bInterest,
+      preference: bPreference,
+      transit: bTransit,
+    } = b.scores;
     return (
-      weights.interest * (interestScores.get(bId) - interestScores.get(aId)) +
-      weights.preference *
-        (preferenceScores.get(bId) - preferenceScores.get(aId)) +
-      weights.transit * (transitScores.get(bId) - transitScores.get(aId))
+      weights.interest * (bInterest - aInterest) +
+      weights.preference * (bPreference - aPreference) +
+      weights.transit * (bTransit - aTransit)
     );
   };
 
