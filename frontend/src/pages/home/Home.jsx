@@ -162,6 +162,32 @@ export default function Home({ userId }) {
     },
   });
 
+  async function handleLikePlace(placeId, isUnlike) {
+    try {
+      const response = await fetch(
+        new URL(`user/${userId}/likeAndUpdateWeights`, VITE_EXPRESS_API),
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            placeId: placeId,
+            options: options,
+            isUnlike: isUnlike,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error. Status ${response.status}`);
+      }
+      await fetchProfile(userId);
+    } catch (error) {
+      console.error("Error updating likes and weights:", error);
+    }
+  }
+
   return (
     <>
       <Paper id="home-body">
@@ -181,6 +207,8 @@ export default function Home({ userId }) {
               activeOption={activeOption}
               setActiveOption={setActiveOption}
               setIsRouteDetailDisplayed={setIsRouteDetailDisplayed}
+              likedPlaces={profile?.likedPlaces}
+              handleLikePlace={handleLikePlace}
             />
           )}
         </section>

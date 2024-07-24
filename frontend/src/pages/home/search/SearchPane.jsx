@@ -13,6 +13,8 @@ export default function SearchPane({
   activeOption,
   setActiveOption,
   setIsRouteDetailDisplayed,
+  likedPlaces,
+  handleLikePlace,
 }) {
   return (
     <>
@@ -31,6 +33,10 @@ export default function SearchPane({
               activeOption={activeOption}
               setActiveOption={setActiveOption}
               setIsRouteDetailDisplayed={setIsRouteDetailDisplayed}
+              liked={likedPlaces
+                ?.map((place) => place.id)
+                .includes(option.place.id)}
+              handleLikePlace={handleLikePlace}
             />
           ))}
         {noResultsFound && (
@@ -50,4 +56,6 @@ SearchPane.propTypes = {
   activeOption: PropTypes.object,
   setActiveOption: PropTypes.func.isRequired,
   setIsRouteDetailDisplayed: PropTypes.func.isRequired,
+  likedPlaces: PropTypes.array,
+  handleLikePlace: PropTypes.func.isRequired,
 };
