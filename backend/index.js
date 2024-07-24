@@ -28,7 +28,12 @@ app.get("/recommend", async (req, res) => {
     const options = await recommender.recommend(
       searchQuery,
       profile.interests,
-      JSON.parse(settings)
+      JSON.parse(settings),
+      {
+        interest: profile.weightInterest,
+        preference: profile.weightPreference,
+        transit: profile.weightTransit,
+      }
     );
     res.status(200).send(options);
   } catch (error) {

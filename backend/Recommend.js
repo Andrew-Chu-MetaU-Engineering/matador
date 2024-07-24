@@ -1,15 +1,9 @@
 const recommendUtils = require("./RecommendUtils");
-const {
-  NUM_RECOMMENDATIONS,
-  INTEREST_SCORE_WEIGHT,
-  PREFERENCE_SCORE_WEIGHT,
-  TRANSIT_SCORE_WEIGHT,
-  MAX_POSSIBLE_PRICE_LEVEL,
-  MAX_POSSIBLE_RATING,
-} = process.env;
+const { NUM_RECOMMENDATIONS, MAX_POSSIBLE_PRICE_LEVEL, MAX_POSSIBLE_RATING } =
+  process.env;
 
 // Use user interest, preference, and quality of transit to recommend places of interest
-async function recommend(query, interests, settings) {
+async function recommend(query, interests, settings, weights) {
   const options = await recommendUtils.fetchRecommendations(
     NUM_RECOMMENDATIONS,
     settings,
@@ -28,11 +22,10 @@ async function recommend(query, interests, settings) {
     const aId = a.place.id;
     const bId = b.place.id;
     return (
-      INTEREST_SCORE_WEIGHT *
-        (interestScores.get(bId) - interestScores.get(aId)) +
-      PREFERENCE_SCORE_WEIGHT *
+      weights.interest * (interestScores.get(bId) - interestScores.get(aId)) +
+      weights.preference *
         (preferenceScores.get(bId) - preferenceScores.get(aId)) +
-      TRANSIT_SCORE_WEIGHT * (transitScores.get(bId) - transitScores.get(aId))
+      weights.transit * (transitScores.get(bId) - transitScores.get(aId))
     );
   };
 
