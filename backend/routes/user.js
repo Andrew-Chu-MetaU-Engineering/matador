@@ -24,6 +24,7 @@ router.get("/:id", async (req, res) => {
     where: { id: req.params.id },
     update: {},
     create: { id: req.params.id },
+    include: { likedPlaces: true },
   });
   res.status(200).json(user);
 });
@@ -98,7 +99,7 @@ router.put("/:id/weights", async (req, res) => {
 });
 
 router.get("/:id/likes", async (req, res) => {
-  const likedPlaces = await prisma.user.findUnique({
+  const likedPlaces = await prisma.user.findMany({
     where: {
       id: req.params.id,
     },
@@ -109,13 +110,22 @@ router.get("/:id/likes", async (req, res) => {
   res.status(200).json(likedPlaces);
 });
 
-router.put("/:id/likes", async (req, res) => {
+router.put("/:id/likes/:placeId", async (req, res) => {
   const likedPlaces = await prisma.user.update({
     where: {
       id: req.params.id,
     },
     data: {
-      likedPlaces: req.body.likedPlaces,
+      likedPlaces: {
+        connectOrCreate: {
+          where: {
+            id: req.params.placeId,
+          },
+          create: {
+            id: req.params.placeId,
+          },
+        },
+      },
     },
   });
   res.status(204).json(likedPlaces);

@@ -5,6 +5,7 @@ const isograph = require("./Isograph");
 require("dotenv").config();
 
 const { router: userRoute, getUser } = require("./routes/user");
+const { router: likedPlaceRoute } = require("./routes/place");
 
 const app = express();
 app.use(express.json());
@@ -18,6 +19,7 @@ app.get("/", (req, res, next) => {
 });
 
 app.use("/user", userRoute);
+app.use("/likedPlace", likedPlaceRoute);
 
 app.get("/recommend", async (req, res) => {
   try {
