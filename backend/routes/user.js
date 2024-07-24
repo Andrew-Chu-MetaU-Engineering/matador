@@ -4,6 +4,8 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const { calculateNewWeights } = require("../WeightLearning");
+
 router.get("/", async (req, res) => {
   const users = await prisma.user.findMany();
   res.status(200).json(users);
@@ -70,34 +72,6 @@ router.put("/:id/interests", async (req, res) => {
   res.status(204).json(interests);
 });
 
-router.get("/:id/weights", async (req, res) => {
-  const weights = await prisma.user.findUnique({
-    where: {
-      id: req.params.id,
-    },
-    select: {
-      weightInterest: true,
-      weightPreference: true,
-      weightTransit: true,
-    },
-  });
-  res.status(200).json(weights);
-});
-
-router.put("/:id/weights", async (req, res) => {
-  const weights = await prisma.user.update({
-    where: {
-      id: req.params.id,
-    },
-    data: {
-      weightInterest: req.body.weightInterest,
-      weightPreference: req.body.weightPreference,
-      weightTransit: req.body.weightTransit,
-    },
-  });
-  res.status(204).json(weights);
-});
-
 router.get("/:id/likes", async (req, res) => {
   const likedPlaces = await prisma.user.findMany({
     where: {
@@ -110,25 +84,95 @@ router.get("/:id/likes", async (req, res) => {
   res.status(200).json(likedPlaces);
 });
 
-router.put("/:id/likes/:placeId", async (req, res) => {
-  const likedPlaces = await prisma.user.update({
+router.put("/:id/likeAndUpdateWeights", async (req, res) => {
+  const { id } = req.params;
+  const { placeId, options, isUnlike } = req.body;
+
+  // add liked place to user profile
+  if (isUnlike) {
+    await removeLikedPlace(id, placeId);
+  } else {
+    await addLikedPlace(id, placeId);
+  }
+
+  // learn what the new weights should be and update profile
+  const { weightInterest, weightPreference, weightTransit } = await getWeights(
+    id
+  );
+  await setWeights(
+    id,
+    ...calculateNewWeights(
+      options.map((option) => {
+        const { interest, preference, transit } = option.scores;
+        return [interest, preference, transit];
+      }),
+      options.map((option) => option.place.id).indexOf(placeId),
+      [weightInterest, weightPreference, weightTransit],
+      isUnlike
+    )
+  );
+  res.status(200).end();
+});
+
+async function getWeights(id) {
+  return await prisma.user.findUnique({
     where: {
-      id: req.params.id,
+      id: id,
+    },
+    select: {
+      weightInterest: true,
+      weightPreference: true,
+      weightTransit: true,
+    },
+  });
+}
+
+async function setWeights(id, interestWeight, preferenceWeight, transitWeight) {
+  await prisma.user.update({
+    where: {
+      id: id,
+    },
+    data: {
+      weightInterest: interestWeight,
+      weightPreference: preferenceWeight,
+      weightTransit: transitWeight,
+    },
+  });
+}
+
+async function addLikedPlace(id, placeId) {
+  await prisma.user.update({
+    where: {
+      id: id,
     },
     data: {
       likedPlaces: {
         connectOrCreate: {
           where: {
-            id: req.params.placeId,
+            id: placeId,
           },
           create: {
-            id: req.params.placeId,
+            id: placeId,
           },
         },
       },
     },
   });
-  res.status(204).json(likedPlaces);
-});
+}
+
+async function removeLikedPlace(id, placeId) {
+  await prisma.user.update({
+    where: {
+      id: id,
+    },
+    data: {
+      likedPlaces: {
+        disconnect: {
+          id: placeId,
+        },
+      },
+    },
+  });
+}
 
 module.exports = { router, getUser };
