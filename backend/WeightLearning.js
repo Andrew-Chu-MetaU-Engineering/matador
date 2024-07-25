@@ -6,14 +6,17 @@
  *  used to generate the recommendations associated with optionScores
  * @returns A float array that represents the adjusted values of weights
  */
-function weightLearning(optionScores, likedOptionIndex, currentWeights) {
-  let adjustment = [0, 0, 0];
-  if (likedOptionIndex >= optionScores.length) return adjustment;
+function calculateNewWeights(
+  optionScores,
+  likedOptionIndex,
+  currentWeights,
+  isUnlike
+) {
+  if (likedOptionIndex >= optionScores.length) return currentWeights;
 
-  const likeError = calculateError(optionScores, likedOptionIndex);
-  adjustment = adjustment.map((val, i) => val + likeError[i]);
-
-  return adjustment.map((val, i) => val + currentWeights[i]);
+  let likeError = calculateError(optionScores, likedOptionIndex, isUnlike);
+  if (isUnlike) likeError = likeError.map((val) => -val);
+  return calculateAdjustedWeights(likeError, currentWeights);
 }
 
 function calculateError(optionScores, likedOptionIndex) {
@@ -34,3 +37,25 @@ function calculateError(optionScores, likedOptionIndex) {
   });
   return error;
 }
+
+// Make sure that any additions/subtractions to the weights are balanced
+function calculateAdjustedWeights(adjustment, weights) {
+  const numUnadjusted = adjustment.filter((val) => val === 0);
+  if (numUnadjusted > 0) {
+    // if some weights' adjustment is 0, evenly split -(total adjustments) between these unadjusted weights
+    const totalAdjustment = adjustment.reduce((sum, val) => sum + val);
+    return adjustment.map(
+      (val, i) =>
+        (val === 0 ? -totalAdjustment / numUnadjusted : val) + weights[i]
+    );
+  } else {
+    // if all weights are adjusted, take the difference from the avg adjustment
+    const averageAdjustment =
+      adjustment.reduce((sum, val) => sum + val) / adjustment.length;
+    return adjustment.map((val, i) => val - averageAdjustment + weights[i]);
+  }
+}
+
+module.exports = {
+  calculateNewWeights,
+};

@@ -1,6 +1,10 @@
 import PropTypes from "prop-types";
-import { Card, Text, Rating, Group, Button } from "@mantine/core";
-import { IconFlagFilled } from "@tabler/icons-react";
+import { Card, Text, Rating, Group, Button, ActionIcon } from "@mantine/core";
+import {
+  IconHeart,
+  IconHeartFilled,
+  IconFlagFilled,
+} from "@tabler/icons-react";
 import "./SearchResult.css";
 
 export default function SearchResult({
@@ -8,8 +12,13 @@ export default function SearchResult({
   activeOption,
   setActiveOption,
   setIsRouteDetailDisplayed,
+  liked,
+  handleLikePlace,
 }) {
-  const { place, extracted } = option;
+  const {
+    place: { id, displayName, rating },
+    extracted,
+  } = option;
   const durationMinutes = Math.round(extracted.duration / 60); // extracted.duration is in seconds
 
   return (
@@ -19,17 +28,28 @@ export default function SearchResult({
       radius="md"
       mb="xs"
       onClick={() => {
-        if (activeOption?.place.id !== option?.place.id) {
+        if (activeOption?.place.id !== id) {
           setActiveOption(option);
           setIsRouteDetailDisplayed(false);
         }
       }}
     >
       <Group justify="space-between">
-        <Text size="lg">{place.displayName.text}</Text>
-        {activeOption?.place.id === option?.place.id && (
-          <IconFlagFilled id="result-flag-icon" />
-        )}
+        <Text size="lg">{displayName.text}</Text>
+        <Group>
+          {activeOption?.place.id === option?.place.id && (
+            <IconFlagFilled id="result-flag-icon" />
+          )}
+          <ActionIcon
+            onClick={() =>
+              liked ? handleLikePlace(id, true) : handleLikePlace(id, false)
+            }
+            color="red"
+            variant="light"
+          >
+            {liked ? <IconHeartFilled /> : <IconHeart />}
+          </ActionIcon>
+        </Group>
       </Group>
       <div id="place-properties">
         <Text size="md" c="dimmed" truncate="end">
@@ -44,11 +64,11 @@ export default function SearchResult({
               {"$".repeat(extracted.priceLevel)}
             </Text>
           )}
-          {place.rating && (
+          {rating && (
             <Group gap="xs">
-              <Rating value={place.rating} fractions={2} size="xs" readOnly />
+              <Rating value={rating} fractions={2} size="xs" readOnly />
               <Text size="sm" c="dimmed" truncate="end">
-                {place.rating.toFixed(1)}
+                {rating.toFixed(1)}
               </Text>
             </Group>
           )}
@@ -74,4 +94,6 @@ SearchResult.propTypes = {
   activeOption: PropTypes.object,
   setActiveOption: PropTypes.func.isRequired,
   setIsRouteDetailDisplayed: PropTypes.func.isRequired,
+  liked: PropTypes.bool.isRequired,
+  handleLikePlace: PropTypes.func.isRequired,
 };
