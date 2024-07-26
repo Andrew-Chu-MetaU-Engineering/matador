@@ -102,13 +102,14 @@ router.put("/:id/likeAndUpdateWeights", async (req, res) => {
   );
   await setWeights(
     id,
-    ...calculateNewWeights(
-      options.map((option) => {
-        const { interest, preference, transit } = option.scores;
-        return [interest, preference, transit];
-      }),
+    calculateNewWeights(
+      options.map((option) => option.scores),
       options.map((option) => option.place.id).indexOf(placeId),
-      [weightInterest, weightPreference, weightTransit],
+      {
+        interest: weightInterest,
+        preference: weightPreference,
+        transit: weightTransit,
+      },
       isUnlike
     )
   );
@@ -128,15 +129,15 @@ async function getWeights(id) {
   });
 }
 
-async function setWeights(id, interestWeight, preferenceWeight, transitWeight) {
+async function setWeights(id, newWeights) {
   await prisma.user.update({
     where: {
       id: id,
     },
     data: {
-      weightInterest: interestWeight,
-      weightPreference: preferenceWeight,
-      weightTransit: transitWeight,
+      weightInterest: newWeights.interest,
+      weightPreference: newWeights.preference,
+      weightTransit: newWeights.transit,
     },
   });
 }
