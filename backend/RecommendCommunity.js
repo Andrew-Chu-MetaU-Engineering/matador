@@ -43,15 +43,17 @@ async function scoreLikedPlaces(primaryUser, likedPlaceData) {
     otherUsers.map((user, i) => [user.id, otherUsersSimilarity[i]])
   );
 
-  const scores = {};
+  const scores = new Map();
   for (const [placeId, place] of Object.entries(likedPlaceData)) {
-    scores[placeId] =
+    scores.set(
+      placeId,
       place?.users != null
         ? calculatePlaceScore(
             place.users.filter((user) => user.id !== primaryUser.id), // disregard own like in community rankings
             otherUsersSimilarityMap
           )
-        : null;
+        : null
+    );
   }
   return scores;
 }
@@ -75,8 +77,7 @@ async function userSimilarity(
 
   const similarityScores = [interestSimilarity, likeSimilarity];
   return (
-    similarityScores.reduce((sum, val) => sum + val) / similarityScores.length +
-    1 // any like should contribute at least a value of 1
+    similarityScores.reduce((sum, val) => sum + val) / similarityScores.length
   );
 }
 
@@ -114,7 +115,9 @@ function calculatePlaceScore(likeUsers, otherUsersSimilarityMap) {
   const userScores = likeUsers.map((user) =>
     otherUsersSimilarityMap.get(user.id)
   );
-  return userScores.reduce((sum, val) => sum + val) / userScores.length;
+
+  // boost factor should be >= 1, but use sqrt to reduce large values
+  return Math.sqrt(userScores.reduce((sum, val) => sum + val)) + 1;
 }
 
 module.exports = {
