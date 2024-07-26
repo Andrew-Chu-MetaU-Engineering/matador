@@ -16,6 +16,7 @@ async function getUser(id) {
   // for use internally within backend
   const user = await prisma.user.findUnique({
     where: { id: id },
+    include: { likedPlaces: true },
   });
   return user;
 }

@@ -9,18 +9,22 @@ router.get("/", async (req, res) => {
   res.status(200).json(places);
 });
 
-router.get("/:id/", async (req, res) => {
-  const numLikes = await prisma.likedPlace.findUnique({
+async function getPlaceLikes(placeId) {
+  const likedPlaces = await prisma.likedPlace.findUnique({
     where: {
-      id: req.params.id,
+      id: placeId,
     },
     select: {
-      _count: {
-        select: { users: true },
+      users: {
+        select: {
+          id: true,
+          interests: true,
+          likedPlaces: true,
+        },
       },
     },
   });
-  res.status(200).json(numLikes);
-});
+  return likedPlaces;
+}
 
-module.exports = { router };
+module.exports = { router, getPlaceLikes };
