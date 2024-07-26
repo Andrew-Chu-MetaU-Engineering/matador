@@ -1,9 +1,18 @@
 const recommendUtils = require("./RecommendUtils");
+const recommendCommunity = require("./RecommendCommunity");
 const { NUM_RECOMMENDATIONS, MAX_POSSIBLE_PRICE_LEVEL, MAX_POSSIBLE_RATING } =
   process.env;
 
 // Use user interest, preference, and quality of transit to recommend places of interest
-async function recommend(query, interests, settings, weights) {
+async function recommend(query, profile, settings) {
+  const { interests, weightInterest, weightPreference, weightTransit } =
+    profile;
+  const weights = {
+    interest: weightInterest,
+    preference: weightPreference,
+    transit: weightTransit,
+  };
+
   const options = await recommendUtils.fetchRecommendations(
     NUM_RECOMMENDATIONS,
     settings,
@@ -17,6 +26,7 @@ async function recommend(query, interests, settings, weights) {
   );
   const preferenceScores = calculatePreferenceScores(settings, options);
   const transitScores = calculateTransitScores(options);
+  const communityBoosts = await calculateCommunityBoosts(profile, options);
 
   options.forEach((option) => {
     const id = option.place.id;
@@ -27,25 +37,11 @@ async function recommend(query, interests, settings, weights) {
     };
   });
 
-  const combinedScoresComparator = (a, b) => {
-    const {
-      interest: aInterest,
-      preference: aPreference,
-      transit: aTransit,
-    } = a.scores;
-    const {
-      interest: bInterest,
-      preference: bPreference,
-      transit: bTransit,
-    } = b.scores;
-    return (
-      weights.interest * (bInterest - aInterest) +
-      weights.preference * (bPreference - aPreference) +
-      weights.transit * (bTransit - aTransit)
-    );
-  };
-
-  return options.sort(combinedScoresComparator);
+  return options.sort(
+    (a, b) =>
+      calculateWeightedScore(b, communityBoosts, weights) -
+      calculateWeightedScore(a, communityBoosts, weights)
+  );
 }
 
 async function calculateInterestScores(query, interests, options) {
@@ -133,6 +129,25 @@ function calculateTransitScores(options) {
     );
   }
   return recommendUtils.normalizeScores(transitScores);
+}
+
+async function calculateCommunityBoosts(profile, options) {
+  const likedPlaceData = await recommendCommunity.fetchCommunityLikes(
+    options.map((option) => option.place.id)
+  );
+
+  return await recommendCommunity.scoreLikedPlaces(profile, likedPlaceData);
+}
+
+function calculateWeightedScore(option, communityBoosts, weights) {
+  const { interest, preference, transit } = option.scores;
+  const boost = communityBoosts.get(option.place.id) || 1; // use multiplicative identity (1) if boost null
+  return (
+    (interest * weights.interest +
+      preference * weights.preference +
+      transit * weights.transit) *
+    boost
+  );
 }
 
 module.exports = { recommend };
