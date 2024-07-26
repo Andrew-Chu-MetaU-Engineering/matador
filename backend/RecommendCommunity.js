@@ -113,11 +113,11 @@ function calculatePlaceScore(likeUsers, otherUsersSimilarityMap) {
   if (likeUsers.length === 0) return null;
 
   const userScores = likeUsers.map((user) =>
-    otherUsersSimilarityMap.get(user.id)
+    otherUsersSimilarityMap.get(user.id) + 1 // each user like should be >= 1
   );
 
-  // boost factor should be >= 1, but use sqrt to reduce large values
-  return Math.sqrt(userScores.reduce((sum, val) => sum + val)) + 1;
+  // use sqrt to reduce large values, with sqrt(x+1) to set y-intercept at 1
+  return Math.sqrt(userScores.reduce((sum, val) => sum + val) + 1);
 }
 
 module.exports = {
