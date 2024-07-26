@@ -27,13 +27,8 @@ app.get("/recommend", async (req, res) => {
     const profile = await getUser(userId);
     const options = await recommender.recommend(
       searchQuery,
-      profile.interests,
+      profile,
       JSON.parse(settings),
-      {
-        interest: profile.weightInterest,
-        preference: profile.weightPreference,
-        transit: profile.weightTransit,
-      }
     );
     res.status(200).send(options);
   } catch (error) {
