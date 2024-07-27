@@ -7,7 +7,7 @@ const { VITE_EXPRESS_API, VITE_COST_TYPE_DURATION, VITE_COST_TYPE_FARE } =
   import.meta.env;
 
 export default function Isograph({ isographSettings }) {
-  const REFETCH_THRESHOLD_MS = 60 * 60 * 1000; // only fetch new data for >1min diff in departure time
+  const REFETCH_THRESHOLD_MS = 60 * 1000; // only fetch new data for >1min diff in departure time
   const [isographData, setIsographData] = useState(null);
   const [isographMapLayer, setIsographMapLayer] = useState(null);
   const [tooltipValue, setTooltipValue] = useState(null);
