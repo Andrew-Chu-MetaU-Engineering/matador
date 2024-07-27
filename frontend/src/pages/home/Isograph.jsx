@@ -30,10 +30,6 @@ export default function Isograph({ isographSettings }) {
           new Date(prevIsographSettings.departureTime)
       ) < REFETCH_THRESHOLD_MS
     ) {
-      setPrevIsographSettings((prev) => ({
-        ...prev,
-        originAddress: isographSettings.originAddress,
-      }));
       return;
     } else {
       setPrevIsographSettings(isographSettings);
