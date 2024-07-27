@@ -12,6 +12,7 @@ const SAMPLING_DISTANCES = Array.from(
   { length: SAMPLES_PER_DIRECTION },
   (v, i) => STEP_SIZE * (i + 1)
 );
+const COST_TYPES = [COST_TYPE_DURATION, COST_TYPE_FARE];
 
 /**
  * Samples the cost (fare or duration) to get to coordinates around the origin address,
@@ -41,22 +42,27 @@ async function isograph(originAddress, departureTime) {
     departureTime
   );
 
-  const polynomialEstimates = {};
-  for (const costType of [COST_TYPE_DURATION, COST_TYPE_FARE]) {
-    const costPoints = isographUtils.extractCostPoints(
-      sampleInfo,
-      originCoordinates,
-      costType
-    );
+  const polynomialEstimates = await Promise.all(
+    COST_TYPES.map((costType) => {
+      const costPoints = isographUtils.extractCostPoints(
+        sampleInfo,
+        originCoordinates,
+        costType
+      );
 
-    const estimations = await isographUtils.fetchPolynomialEstimation(
-      costPoints,
-      POLYNOMIAL_ORDER,
-      POLYNOMIAL_DIMENSIONAL_SAMPLE_COUNT
-    );
-    polynomialEstimates[costType] = estimations.estimates;
-  }
-  return polynomialEstimates;
+      return isographUtils.fetchPolynomialEstimation(
+        costPoints,
+        POLYNOMIAL_ORDER,
+        POLYNOMIAL_DIMENSIONAL_SAMPLE_COUNT
+      );
+    })
+  );
+  return Object.fromEntries(
+    COST_TYPES.map((costType, i) => [
+      costType,
+      polynomialEstimates[i].estimates,
+    ])
+  );
 }
 
 module.exports = { isograph };
