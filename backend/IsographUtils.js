@@ -1,12 +1,5 @@
 const fetchResultsUtils = require("./FetchResultsUtils");
-const {
-  GOOGLE_API_KEY,
-  GEOCODING_ENDPOINT,
-  COST_TYPE_DURATION,
-  COST_TYPE_FARE,
-  COST_TYPE_ERROR_MSG,
-  ISOGRAPHS_API,
-} = process.env;
+const { GOOGLE_API_KEY, GEOCODING_ENDPOINT, ISOGRAPHS_API } = process.env;
 
 // Convert a plain text address to a coordinate, for use in isograph sampling
 async function geocode(originAddress) {
@@ -61,23 +54,22 @@ function toRadians(degrees) {
  * Fetches and inserts costs into sampleInfo from Google RouteMatrix
  * between origin and destination coordinates concurrently
  */
-async function insertSampleCosts(sampleInfo, origin, costType, departureTime) {
+async function insertSampleCosts(sampleInfo, origin, departureTime) {
   const costs = await Promise.all(
     sampleInfo.map((directionalSamples) =>
-      fetchCosts(
-        origin,
-        directionalSamples.coordinates,
-        costType,
-        departureTime
-      )
+      fetchCosts(origin, directionalSamples.coordinates, departureTime)
     )
   );
+
   sampleInfo.forEach((sampleDirection, i) => {
-    sampleDirection.costs = costs[i];
+    sampleDirection.costs = {
+      duration: costs[i].duration,
+      fare: costs[i].fare,
+    };
   });
 }
 
-async function fetchCosts(origin, samplePoints, costType, departureTime) {
+async function fetchCosts(origin, samplePoints, departureTime) {
   try {
     const routesData = await fetchResultsUtils.fetchRouteMatrix(
       origin,
@@ -86,18 +78,29 @@ async function fetchCosts(origin, samplePoints, costType, departureTime) {
       true
     );
 
-    if (costType === COST_TYPE_DURATION) {
-      return routesData.map(
+    return {
+      duration: routesData.map(
         (route) => fetchResultsUtils.parseDuration(route) / 60
-      ); // convert to minutes
-    } else if (costType === COST_TYPE_FARE) {
-      return routesData.map((route) => fetchResultsUtils.calculateFare(route));
-    } else {
-      console.error(COST_TYPE_ERROR_MSG);
-    }
+      ), // convert to minutes
+      fare: routesData.map((route) => fetchResultsUtils.calculateFare(route)),
+    };
   } catch (error) {
     console.error(error.message);
   }
+}
+
+function extractCostPoints(sampleInfo, originCoordinates, costType) {
+  const costPoints = sampleInfo
+    .map((directionalSamples) =>
+      directionalSamples.coordinates.map((coordinate, i) => [
+        ...coordinate,
+        directionalSamples.costs[costType][i],
+      ])
+    )
+    .flat();
+  costPoints.push([...originCoordinates, 0]); // add the origin as a sample of cost 0
+
+  return costPoints;
 }
 
 // Fetch points from the polynomial regression, fitted using the cost samples
@@ -129,5 +132,6 @@ module.exports = {
   geocode,
   findCoordinate,
   insertSampleCosts,
+  extractCostPoints,
   fetchPolynomialEstimation,
 };

@@ -271,10 +271,12 @@ function parseAccessibility(place) {
 }
 
 function parseDuration(route) {
+  if (route?.duration == null) return null;
   return parseInt(route.duration, 10);
 }
 
 function calculateFare(route) {
+  if (route?.travelAdvisory?.transitFare == null) return null;
   const { units = 0, nanos = 0 } = route.travelAdvisory.transitFare;
   return parseInt(units) + nanos * 10 ** -9;
 }

@@ -7,36 +7,61 @@ const { VITE_EXPRESS_API, VITE_COST_TYPE_DURATION, VITE_COST_TYPE_FARE } =
   import.meta.env;
 
 export default function Isograph({ isographSettings }) {
+  const REFETCH_THRESHOLD_MS = 60 * 60 * 1000; // only fetch new data for >1min diff in departure time
   const [isographData, setIsographData] = useState(null);
   const [isographMapLayer, setIsographMapLayer] = useState(null);
   const [tooltipValue, setTooltipValue] = useState(null);
   const [mouseListeners, setMouseListeners] = useState(null);
+  const [prevIsographSettings, setPrevIsographSettings] = useState({
+    originAddress: null,
+    departureTime: null,
+  });
   const apiIsLoaded = useApiIsLoaded();
   const map = useMap();
 
   // Initialize Google Maps data layer and fetch isograph data
   useEffect(() => {
+    // check refetch frequency
+    if (
+      isographSettings.originAddress === prevIsographSettings.originAddress &&
+      prevIsographSettings.departureTime != null &&
+      Math.abs(
+        new Date(isographSettings.departureTime) -
+          new Date(prevIsographSettings.departureTime)
+      ) < REFETCH_THRESHOLD_MS
+    ) {
+      setPrevIsographSettings((prev) => ({
+        ...prev,
+        originAddress: isographSettings.originAddress,
+      }));
+      return;
+    } else {
+      setPrevIsographSettings(isographSettings);
+    }
+
     if (apiIsLoaded == null || map == null || isographSettings == null) {
       return;
     } else if (isographMapLayer == null) {
       setIsographMapLayer(new google.maps.Data());
     }
 
-    const { originAddress, costType, departureTime } = isographSettings;
-    if (
-      originAddress.length === 0 ||
-      costType.length === 0 ||
-      departureTime.length === 0
-    ) {
+    const { originAddress, departureTime } = isographSettings;
+    if (originAddress.length === 0 || departureTime.length === 0) {
       return;
     } else {
-      fetchIsographData(originAddress, costType, departureTime);
+      fetchIsographData(originAddress, departureTime);
     }
-  }, [isographSettings, apiIsLoaded, map]);
+  }, [
+    isographSettings.originAddress,
+    isographSettings.departureTime,
+    apiIsLoaded,
+    map,
+  ]);
 
   // Calculate contour shapes and attach to map with stylin
   useEffect(() => {
     if (isographData == null) return;
+    const typeIsographData = isographData[isographSettings.costType];
 
     // reset data layer
     isographMapLayer.forEach((feature) => {
@@ -49,7 +74,7 @@ export default function Isograph({ isographSettings }) {
     setMouseListeners(null);
 
     try {
-      const featureCollection = calculateContours(isographData);
+      const featureCollection = calculateContours(typeIsographData);
 
       isographMapLayer.addGeoJson(featureCollection);
       addIsographStyling(isographMapLayer, featureCollection);
@@ -58,19 +83,18 @@ export default function Isograph({ isographSettings }) {
     } catch (error) {
       console.error(error.message);
     }
-  }, [isographData]);
+  }, [isographData, isographSettings.costType]);
 
   return (
     tooltipValue && (
-      <Tooltip text={tooltipValue} mouseOffset={{ x: -47, y: -41 }} />  // offset values found through manual testing
+      <Tooltip text={tooltipValue} mouseOffset={{ x: -47, y: -41 }} /> // offset values found through manual testing
     )
   );
 
-  async function fetchIsographData(originAddress, costType, departureTime) {
+  async function fetchIsographData(originAddress, departureTime) {
     try {
       let url = new URL("isograph", VITE_EXPRESS_API);
       url.searchParams.append("originAddress", originAddress);
-      url.searchParams.append("costType", costType);
       url.searchParams.append("departureTime", departureTime);
 
       const response = await fetch(url);
