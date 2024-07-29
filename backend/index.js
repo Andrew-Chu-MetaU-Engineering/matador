@@ -28,7 +28,7 @@ app.get("/recommend", async (req, res) => {
     const options = await recommender.recommend(
       searchQuery,
       profile,
-      JSON.parse(settings),
+      JSON.parse(settings)
     );
     res.status(200).send(options);
   } catch (error) {
@@ -38,12 +38,8 @@ app.get("/recommend", async (req, res) => {
 
 app.get("/isograph", async (req, res) => {
   try {
-    const { originAddress, costType, departureTime } = req.query;
-    const isographData = await isograph.isograph(
-      originAddress,
-      costType,
-      departureTime
-    );
+    const { originAddress, departureTime } = req.query;
+    const isographData = await isograph.isograph(originAddress, departureTime);
     res.status(200).send(isographData);
   } catch (error) {
     res.status(500);
