@@ -10,7 +10,10 @@ export default function Header({ userId }) {
     <Box>
       <header id="header">
         <Group id="header-spacing-group">
-          <Title order={1}>Matador</Title>
+          <div id="logo-with-name">
+            <img src="noun-project-bull.svg" id="logo-icon" />
+            <Title order={1}>Matador</Title>
+          </div>
           {userId == null ? (
             <Group>
               <Button
