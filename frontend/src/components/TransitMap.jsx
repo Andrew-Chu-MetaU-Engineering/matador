@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import { Polyline } from "./Polyline";
+import TransitLayer from "./TransitLayer";
 
 export default function TransitMap({ encodedPath, setMapBounds, children }) {
   const { VITE_GOOGLE_API_KEY, VITE_DEFAULT_BOUNDS, VITE_MAP_ID } = import.meta
@@ -28,6 +29,7 @@ export default function TransitMap({ encodedPath, setMapBounds, children }) {
           />
         )}
       </Map>
+      <TransitLayer />
       {children}
     </APIProvider>
   );
