@@ -1,6 +1,5 @@
 #header {
   width: 100vw;
-  height: 4rem;
   padding-left: var(--mantine-spacing-lg);
   padding-right: var(--mantine-spacing-lg);
   border-bottom: 1px solid var(--mantine-color-gray-3);
@@ -9,4 +8,19 @@
 #header-spacing-group {
   height: 100%;
   justify-content: space-between;
+}
+
+#logo-with-name {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 0.5rem;
+}
+
+#logo-with-name > * {
+  margin: 0.2rem;
+}
+
+#logo-icon {
+  width: 2.5rem;
 }

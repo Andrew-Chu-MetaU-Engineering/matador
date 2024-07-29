@@ -1,18 +1,19 @@
-import { Title, Group, Box, ActionIcon } from "@mantine/core";
-import { IconBrandInstagram } from "@tabler/icons-react";
+import { Title, Container, Text } from "@mantine/core";
 import "./Footer.css";
 
 export default function Footer() {
   return (
-    <Box>
-      <footer id="footer">
-        <Group id="footer-spacing-group">
-          <Title order={2}>Matador</Title>
-          <ActionIcon size="lg" color="gray" variant="subtle">
-            <IconBrandInstagram stroke={1.5} />
-          </ActionIcon>
-        </Group>
-      </footer>
-    </Box>
+    <footer id="footer">
+      <Container id="footer-inner">
+        <Title order={3}>Matador</Title>
+        <img src="noun-project-bull.svg" id="footer-icon" />
+        <Text fw={600}>
+          <Text fs="italic" span inherit>
+            by{" "}
+          </Text>
+          andrewchu
+        </Text>
+      </Container>
+    </footer>
   );
 }

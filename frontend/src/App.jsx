@@ -6,11 +6,12 @@ import "@mantine/core/styles.css";
 import { MantineProvider } from "@mantine/core";
 
 import { auth } from "./pages/authentication/firebase-config";
-import Home from "./pages/home/Home";
 import Authentication from "./pages/authentication/Authentication";
+import Home from "./pages/home/Home";
+import Profile from "./pages/profile/Profile";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import Profile from "./pages/profile/Profile";
+import MantineTheme from "./components/MantineTheme";
 
 function App() {
   const [userId, setUserId] = useState(null);
@@ -26,7 +27,7 @@ function App() {
   }, []);
 
   return (
-    <MantineProvider>
+    <MantineProvider theme={MantineTheme}>
       <Router>
         <Header userId={userId} />
         <Routes>
