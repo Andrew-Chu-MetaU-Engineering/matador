@@ -1,12 +1,11 @@
 .detail-pane {
   margin: 0 0rem 0.5rem 0rem;
   padding: 1rem;
-  min-width: 21rem;
-  border-radius: 20px;
+  transition: padding 0.3s ease-in-out 0.3s;
 }
 
 .detail-pane:hover {
-  transition: padding 0.5s ease-in-out 0.5s;
+  transition: padding 0.2s ease-in-out 0.2s;
   padding: 2rem 1rem;
 }
 

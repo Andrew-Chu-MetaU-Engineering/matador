@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { Button, Paper, ScrollArea, Text } from "@mantine/core";
 import { IconArrowBack } from "@tabler/icons-react";
-import StepInfoPane from "./StepInfoPane";
+import StepsOverview from "./StepsOverview";
 import "./RouteDetail.css";
 
 export default function RouteDetail({ option, setIsRouteDetailDisplayed }) {
@@ -10,11 +10,8 @@ export default function RouteDetail({ option, setIsRouteDetailDisplayed }) {
     route: { legs },
   } = option;
 
-  function fadeIn(i) {
-    const DURATION = 800; // values found through visual testing
-    const DELAY = 100;
-    return `fade-in ${DURATION}ms ease-in ${DELAY * i}ms forwards`;
-  }
+  // A RouteLeg object; only one leg because no other intermediate waypoints specified
+  const { localizedValues, steps, stepsOverview } = legs[0];
 
   return (
     <Paper id="detail-panel">
@@ -29,21 +26,15 @@ export default function RouteDetail({ option, setIsRouteDetailDisplayed }) {
           Back
         </Button>
       </section>
-      <Text size="lg" fw={800} ta="center" m="sm">
+      <Text size="lg" fw={800} ta="center">
         Route to {place.displayName.text}
       </Text>
+      <Text size="sm" ta="center" mb="xs">
+        Trip Details: {localizedValues.distance.text} |{" "}
+        {localizedValues.duration.text}
+      </Text>
       <ScrollArea scrollbars="y">
-        {legs.map((leg) => {
-          return leg.steps?.map((step, i) => (
-            <article
-              className="fade-animation-wrapper"
-              key={i}
-              style={{ animation: fadeIn(i) }}
-            >
-              <StepInfoPane step={step} />
-            </article>
-          ));
-        })}
+        <StepsOverview stepsOverview={stepsOverview} steps={steps} />
       </ScrollArea>
     </Paper>
   );
