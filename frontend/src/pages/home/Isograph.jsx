@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useMap, useApiIsLoaded } from "@vis.gl/react-google-maps";
 import * as d3 from "d3";
+import { difference } from "@turf/difference";
+import { featureCollection } from "@turf/helpers";
 import Tooltip from "../../components/Tooltip";
 const { VITE_EXPRESS_API, VITE_COST_TYPE_DURATION, VITE_COST_TYPE_FARE } =
   import.meta.env;
@@ -132,7 +134,7 @@ export default function Isograph({ isographSettings }) {
       );
     }
 
-    return {
+    const contourCollection = {
       type: "FeatureCollection",
       features: contours.map((contour, i) => ({
         type: "Feature",
@@ -143,6 +145,15 @@ export default function Isograph({ isographSettings }) {
         },
       })),
     };
+
+    const contourFeatures = contourCollection.features;
+    for (let i = 0; i < contourFeatures.length - 1; i++) {
+      contourFeatures[i] = difference(
+        featureCollection([contourFeatures[i], contourFeatures[i + 1]])
+      );
+    }
+
+    return contourCollection;
   }
 
   function formatDisplayCost(i, contours) {
