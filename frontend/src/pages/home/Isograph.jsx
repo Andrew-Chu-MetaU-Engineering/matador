@@ -198,6 +198,7 @@ export default function Isograph({ isographSettings }) {
       (e) => {
         setTooltipValue(e.feature.getProperty("displayCost"));
         mapLayer.overrideStyle(e.feature, {
+          fillOpacity: 0.5,
           strokeColor: "white",
           strokeWeight: 4,
         });
