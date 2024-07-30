@@ -6,6 +6,7 @@ import {
   IconFlagFilled,
 } from "@tabler/icons-react";
 import "./SearchResult.css";
+import ScoreBadges from "./ScoreBadges";
 
 export default function SearchResult({
   option,
@@ -18,6 +19,7 @@ export default function SearchResult({
   const {
     place: { id, displayName, rating },
     extracted,
+    scores,
   } = option;
   const durationMinutes = Math.round(extracted.duration / 60); // extracted.duration is in seconds
 
@@ -74,6 +76,7 @@ export default function SearchResult({
           )}
         </div>
       </div>
+      <ScoreBadges scores={scores} />
       <Button
         onClick={() => {
           setIsRouteDetailDisplayed(true);
