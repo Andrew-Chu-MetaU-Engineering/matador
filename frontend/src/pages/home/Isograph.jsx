@@ -184,10 +184,10 @@ export default function Isograph({ isographSettings }) {
       const normalizedCost = (cost - minThresh) / (maxThresh - minThresh);
       return {
         fillColor: d3.interpolateTurbo(normalizedCost),
-        fillOpacity: 0.2,
+        fillOpacity: 0.4,
         strokeColor: "lightgrey",
         strokeWeight: 1,
-        zIndex: normalizedCost,
+        zIndex: 1 / normalizedCost,
       };
     });
   }
@@ -199,7 +199,7 @@ export default function Isograph({ isographSettings }) {
         setTooltipValue(e.feature.getProperty("displayCost"));
         mapLayer.overrideStyle(e.feature, {
           strokeColor: "white",
-          strokeWeight: 2,
+          strokeWeight: 4,
         });
       }
     );
