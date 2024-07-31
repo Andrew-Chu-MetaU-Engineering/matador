@@ -1,6 +1,7 @@
 # matador
 
-![image](https://github.com/user-attachments/assets/3f35d117-0150-4fc9-bac7-19ba4b4f73a2)
+![image](https://github.com/user-attachments/assets/d8193851-ef5f-413f-8080-818ad051cde8)
+
 
 ## Background 
 
