@@ -1,14 +1,15 @@
 # matador
 
-![image](https://github.com/user-attachments/assets/3f35d117-0150-4fc9-bac7-19ba4b4f73a2)
+![image](https://github.com/user-attachments/assets/d8193851-ef5f-413f-8080-818ad051cde8)
+
 
 ## Background 
 
-According to the Department of Transportation, increased access to public transportation has ["potential traffic safety, air quality, active	 transportation, and accessibility benefits, thus improving associated personal health outcomes."](https://www.transportation.gov/mission/health/Expand-Public-Transportation-Systems-and-Offer-Incentives) Yet, there are few easy ways to plan trips that do not involve the use of a car. Other tools in this segment, such as Google Maps and the mobile app Transit, provide a way to check transit details once the user has decided a destination and arrival/departure times, but there is no easy option for discovering places of interest based on important factors to the user such as travel cost and travel time. Matador aims to address this issue by adding a place-of-interest discovery and recommendation feature, along with planning tools that decide an optimal itinerary for the user.
+According to the Department of Transportation, increased access to public transportation has ["potential traffic safety, air quality, active	 transportation, and accessibility benefits, thus improving associated personal health outcomes."](https://www.transportation.gov/mission/health/Expand-Public-Transportation-Systems-and-Offer-Incentives) Yet, there are few easy ways to plan trips that do not involve the use of a car. Other tools in this segment, such as Google Maps and the mobile app Transit, provide a way to check transit details once the user has decided a destination and arrival/departure times, but there is no easy option for discovering places of interest based on important factors to the user such as travel cost and travel time. Matador aims to address this issue by adding a place-of-interest discovery and recommendation feature.
 - Category: Navigation
 - Story: Users create an account, and add information about themselves to their profile (e.g. home location, hobbies/interests, preferred mode of transportation)
 - Market: Matador is aimed at users ages 16-50 who do not have easy access to cars or prefer to use public transportation, and wish to discover new activities or locations in their area.
-- Habit: For the average user, Matador would be used between 2 and 4 times a week, primarily to discover new places of interest and find new itineraries for their trips.
+- Habit: For the average user, Matador would be used between 2 and 4 times a week, primarily to discover new places of interest.
 - Scope: The scope of Matador is focused toward point-of-interest discovery using public transportation.
 
 
